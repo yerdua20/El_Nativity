@@ -19,7 +19,7 @@ const LIENS = [
 
 const lienClasse = ({ isActive }) =>
   `relative flex items-center rounded-md px-3 py-2 text-sm font-medium transition ${
-    isActive ? 'bg-or-400 text-white shadow-sm' : 'text-slate-700 hover:bg-or-100'
+    isActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
   }`
 
 export default function Nav() {
@@ -29,13 +29,13 @@ export default function Nav() {
   const echecs = entrees.filter((entree) => entree.statut === 'echec').length
 
   return (
-    <nav className="flex shrink-0 flex-col justify-between border-b border-or-200 bg-or-50 px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
+    <nav className="flex shrink-0 flex-col justify-between border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
       <div>
-        <div className="mb-6 hidden items-center gap-3 rounded-lg border border-or-200 bg-white px-3 py-3 lg:flex">
-          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-or-300" />
+        <div className="mb-6 hidden items-center gap-3 px-2 lg:flex">
+          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full" />
           <div>
             <span className="block text-lg leading-tight font-semibold text-slate-900">La Nativité</span>
-            <span className="block text-xs text-or-600">Gestion</span>
+            <span className="block text-xs text-slate-500">Gestion</span>
           </div>
         </div>
         <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap lg:gap-1">
@@ -57,7 +57,7 @@ export default function Nav() {
       </div>
       <button
         onClick={logout}
-        className="mt-4 rounded border border-or-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-or-100"
+        className="mt-4 rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
       >
         Déconnexion
       </button>
