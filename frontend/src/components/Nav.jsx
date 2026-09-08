@@ -31,8 +31,8 @@ export default function Nav() {
   return (
     <nav className="flex shrink-0 flex-col justify-between border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
       <div>
-        <div className="mb-6 hidden flex-col items-center gap-2 px-2 text-center lg:flex">
-          <img src={logoNativite} alt="" className="h-24 w-24 rounded-full" />
+        <div className="mb-6 hidden items-center gap-3 px-2 lg:flex">
+          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full" />
           <div>
             <span className="block text-lg leading-tight font-semibold text-slate-900">La Nativité</span>
             <span className="block text-xs text-slate-500">Gestion</span>
