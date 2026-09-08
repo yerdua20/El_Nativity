@@ -138,7 +138,7 @@ export default function Dashboard() {
 
   return (
     <Layout>
-        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 px-6 py-8 text-white shadow-sm">
+        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-700 to-neutral-600 px-6 py-8 text-white shadow-sm">
           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/20" />
           <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
           <div className="relative flex items-center gap-4">
