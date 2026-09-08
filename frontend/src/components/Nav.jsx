@@ -41,6 +41,9 @@ export default function Nav() {
         <NavLink to="/historique" className={lienClasse}>
           Historique
         </NavLink>
+        <NavLink to="/catalogue" className={lienClasse}>
+          Catalogue
+        </NavLink>
         <NavLink to="/synchro" className={lienClasse}>
           Synchronisation
           {enAttente + echecs > 0 && (

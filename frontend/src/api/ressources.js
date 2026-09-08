@@ -38,9 +38,29 @@ export async function listerProduits() {
   return data.results
 }
 
+export async function creerProduit(payload) {
+  const { data } = await apiClient.post('/produits/', payload)
+  return data
+}
+
 export async function listerPointsDeVente() {
   const { data } = await apiClient.get('/points-de-vente/')
   return data.results
+}
+
+export async function creerPointDeVente(payload) {
+  const { data } = await apiClient.post('/points-de-vente/', payload)
+  return data
+}
+
+export async function listerTarifs() {
+  const { data } = await apiClient.get('/tarifs/')
+  return data.results
+}
+
+export async function creerTarif(payload) {
+  const { data } = await apiClient.post('/tarifs/', payload)
+  return data
 }
 
 export async function listerMouvements(url = '/mouvements-stock/') {
