@@ -3,6 +3,7 @@ import { AuthProvider } from './auth/AuthContext'
 import RouteProtegee from './auth/RouteProtegee'
 import AffectationCommercial from './pages/AffectationCommercial'
 import Clients from './pages/Clients'
+import Commerciaux from './pages/Commerciaux'
 import Dashboard from './pages/Dashboard'
 import Encaissement from './pages/Encaissement'
 import FileAttente from './pages/FileAttente'
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/connexion" element={<Login />} />
           <Route path="/" element={protegee(<Dashboard />)} />
           <Route path="/clients" element={protegee(<Clients />)} />
+          <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
           <Route path="/vente" element={protegee(<VenteDeclaree />)} />
           <Route path="/retours" element={protegee(<Retours />)} />

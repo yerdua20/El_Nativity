@@ -15,6 +15,19 @@ export async function listerCommerciaux() {
   return data.results
 }
 
+export async function creerCommercial(payload) {
+  const { data } = await apiClient.post('/commerciaux/', payload)
+  return data
+}
+
+export async function marquerCommercialParti(id) {
+  const { data } = await apiClient.patch(`/commerciaux/${id}/`, {
+    actif: false,
+    date_sortie: new Date().toISOString().slice(0, 10),
+  })
+  return data
+}
+
 export async function listerProduits() {
   const { data } = await apiClient.get('/produits/')
   return data.results

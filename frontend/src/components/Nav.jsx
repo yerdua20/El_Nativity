@@ -20,6 +20,9 @@ export default function Nav() {
         <NavLink to="/clients" className={lienClasse}>
           Clients
         </NavLink>
+        <NavLink to="/commerciaux" className={lienClasse}>
+          Commerciaux
+        </NavLink>
         <NavLink to="/depot" className={lienClasse}>
           Nouveau dépôt
         </NavLink>
