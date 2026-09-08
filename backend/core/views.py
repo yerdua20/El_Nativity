@@ -36,6 +36,12 @@ def _depuis(request):
     return parse_datetime(valeur) if valeur else None
 
 
+def _filtrer_par_client(qs, request):
+    """Applique le paramètre ?client=<id>, utilisé par la fiche client."""
+    client_id = request.query_params.get("client")
+    return qs.filter(client_id=client_id) if client_id else qs
+
+
 class PointDeVenteViewSet(viewsets.ModelViewSet):
     queryset = PointDeVente.objects.all()
     serializer_class = PointDeVenteSerializer
@@ -89,6 +95,7 @@ class MouvementStockViewSet(viewsets.ModelViewSet):
             if not proprietaire:
                 return qs.none()
             qs = qs.filter(Q(commercial=proprietaire) | Q(client__commercial=proprietaire))
+        qs = _filtrer_par_client(qs, self.request)
         depuis = _depuis(self.request)
         if depuis:
             qs = qs.filter(created_at__gt=depuis)
@@ -106,6 +113,7 @@ class EncaissementViewSet(viewsets.ModelViewSet):
             if not proprietaire:
                 return qs.none()
             qs = qs.filter(Q(collecte_par=proprietaire) | Q(client__commercial=proprietaire))
+        qs = _filtrer_par_client(qs, self.request)
         depuis = _depuis(self.request)
         if depuis:
             qs = qs.filter(created_at__gt=depuis)
