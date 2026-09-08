@@ -10,6 +10,11 @@ export async function creerClient(payload) {
   return data
 }
 
+export async function lireClient(id) {
+  const { data } = await apiClient.get(`/clients/${id}/`)
+  return data
+}
+
 export async function listerCommerciaux() {
   const { data } = await apiClient.get('/commerciaux/')
   return data.results

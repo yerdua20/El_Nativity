@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { creerClient, listerClients, listerCommerciaux } from '../api/ressources'
 import Nav from '../components/Nav'
 
@@ -98,7 +99,9 @@ export default function Clients() {
             <ul className="divide-y divide-slate-100 text-sm">
               {clients.map((client) => (
                 <li key={client.id} className="flex justify-between py-2">
-                  <span>{client.nom}</span>
+                  <Link to={`/clients/${client.id}`} className="text-slate-900 underline hover:text-slate-600">
+                    {client.nom}
+                  </Link>
                   <span className="text-slate-500">
                     Marchandise : {client.solde_marchandise} · Financier : {client.solde_financier}
                   </span>

@@ -6,6 +6,7 @@ import Clients from './pages/Clients'
 import Commerciaux from './pages/Commerciaux'
 import Dashboard from './pages/Dashboard'
 import Encaissement from './pages/Encaissement'
+import FicheClient from './pages/FicheClient'
 import FileAttente from './pages/FileAttente'
 import Historique from './pages/Historique'
 import Login from './pages/Login'
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="/connexion" element={<Login />} />
           <Route path="/" element={protegee(<Dashboard />)} />
           <Route path="/clients" element={protegee(<Clients />)} />
+          <Route path="/clients/:id" element={protegee(<FicheClient />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
           <Route path="/vente" element={protegee(<VenteDeclaree />)} />
