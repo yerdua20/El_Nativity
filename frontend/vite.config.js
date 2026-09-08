@@ -10,14 +10,14 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.png'],
       manifest: {
-        name: "Gestion d'affaires",
-        short_name: 'Gestion',
+        name: 'La Nativité — Gestion',
+        short_name: 'La Nativité',
         lang: 'fr',
         description: 'Suivi des dépôts-ventes, stocks et créances des commerciaux.',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        theme_color: '#123a2e',
+        background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         icons: [

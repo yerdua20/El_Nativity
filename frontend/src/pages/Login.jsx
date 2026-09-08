@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import logoNativite from '../assets/logo-nativite.png'
 import { useAuth } from '../auth/AuthContext'
 
 export default function Login() {
@@ -30,7 +31,7 @@ export default function Login() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-8 shadow-sm"
       >
-        <h1 className="mb-6 text-xl font-semibold text-slate-900">Gestion d'affaires</h1>
+        <img src={logoNativite} alt="La Nativité" className="mx-auto mb-6 w-32" />
 
         <label className="mb-1 block text-sm font-medium text-slate-700">
           Nom d'utilisateur
