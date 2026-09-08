@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@theme {
+  /* Palette de marque La Nativité — dérivée du logo (or + vert profond). */
+  --color-or-50: #fbf3e0;
+  --color-or-100: #f6e7c2;
+  --color-or-200: #edcf89;
+  --color-or-300: #e0b355;
+  --color-or-400: #ce9a2e;
+  --color-or-500: #b17f1e;
+  --color-or-600: #8c6417;
+  --color-or-700: #6b4c11;
+
+  --color-vert-50: #e7f1ec;
+  --color-vert-100: #c7e0d3;
+  --color-vert-200: #93c0aa;
+  --color-vert-300: #5b9c80;
+  --color-vert-400: #2e7359;
+  --color-vert-500: #164b37;
+  --color-vert-600: #123a2e;
+  --color-vert-700: #0d2a21;
+  --color-vert-800: #081c16;
+}
+
 body {
   margin: 0;
 }
