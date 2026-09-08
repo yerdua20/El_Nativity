@@ -7,7 +7,7 @@ import {
   listerProduits,
   listerTarifs,
 } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 
 const TYPES_PDV = [
   { valeur: 'DEPOT', libelle: 'Dépôt' },
@@ -272,9 +272,7 @@ export default function Catalogue() {
   useEffect(rafraichir, [])
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Catalogue</h1>
         <p className="mb-6 text-sm text-slate-500">
           Réservé au staff : les commerciaux terrain peuvent consulter mais pas modifier.
@@ -287,7 +285,6 @@ export default function Catalogue() {
           pointsDeVente={pointsDeVente}
           rafraichir={rafraichir}
         />
-      </div>
-    </div>
+    </Layout>
   )
 }

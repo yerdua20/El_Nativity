@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { listerClients, listerCommerciaux, listerProduits } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
 
@@ -38,9 +38,7 @@ export default function VenteDeclaree() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Vente déclarée par un client</h1>
         <p className="mb-6 text-sm text-slate-500">
           Le client déclare avoir vendu une partie de la marchandise déposée : son solde marchandise
@@ -119,7 +117,6 @@ export default function VenteDeclaree() {
             {enCours ? 'Enregistrement...' : 'Déclarer la vente'}
           </button>
         </form>
-      </div>
-    </div>
+    </Layout>
   )
 }

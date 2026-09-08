@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { listerClients, listerCommerciaux, listerProduits } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
 
@@ -69,9 +69,7 @@ export default function NouveauDepot() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Nouveau dépôt chez un client</h1>
         <p className="mb-6 text-sm text-slate-500">
           Fonctionne hors ligne : la saisie est conservée sur l'appareil et envoyée dès que le
@@ -182,7 +180,6 @@ export default function NouveauDepot() {
             {enCours ? 'Enregistrement...' : 'Enregistrer le dépôt'}
           </button>
         </form>
-      </div>
-    </div>
+    </Layout>
   )
 }

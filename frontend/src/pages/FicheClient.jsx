@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { lireClient, listerEncaissements, listerMouvements, listerProduits } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 
 export default function FicheClient() {
@@ -20,17 +20,14 @@ export default function FicheClient() {
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-slate-50">
-        <Nav />
-        <div className="mx-auto max-w-4xl px-6 py-8 text-sm text-slate-500">Chargement...</div>
-      </div>
+      <Layout>
+        <p className="text-sm text-slate-500">Chargement...</p>
+      </Layout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <Link to="/clients" className="mb-4 inline-block text-sm text-slate-500 underline hover:text-slate-700">
           ← Retour aux clients
         </Link>
@@ -91,7 +88,6 @@ export default function FicheClient() {
             </ul>
           )}
         </div>
-      </div>
-    </div>
+    </Layout>
   )
 }

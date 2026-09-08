@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { creerClient, listerClients, listerCommerciaux } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 
 export default function Clients() {
   const [clients, setClients] = useState(null)
@@ -43,9 +43,7 @@ export default function Clients() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-3xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Clients</h1>
 
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
@@ -110,7 +108,6 @@ export default function Clients() {
             </ul>
           )}
         </div>
-      </div>
-    </div>
+    </Layout>
   )
 }

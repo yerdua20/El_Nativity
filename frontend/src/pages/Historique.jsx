@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { listerClients, listerEncaissements, listerMouvements, listerProduits } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 
 function useNoms(fetcher) {
   const [parId, setParId] = useState({})
@@ -69,9 +69,7 @@ export default function Historique() {
   const nomsProduits = useNoms(listerProduits)
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Historique</h1>
 
         <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
@@ -149,7 +147,6 @@ export default function Historique() {
           )}
           <BoutonsPagination precedent={encaissements.precedent} suivant={encaissements.suivant} />
         </div>
-      </div>
-    </div>
+    </Layout>
   )
 }

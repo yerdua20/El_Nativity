@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { listerClients, listerCommerciaux, listerPointsDeVente, listerProduits } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
 
@@ -42,9 +42,7 @@ export default function Retours() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Retour de marchandise</h1>
 
         <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-4">
@@ -158,7 +156,6 @@ export default function Retours() {
             {enCours ? 'Enregistrement...' : 'Enregistrer le retour'}
           </button>
         </form>
-      </div>
-    </div>
+    </Layout>
   )
 }

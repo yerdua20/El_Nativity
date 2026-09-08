@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { creerCommercial, listerCommerciaux, listerPointsDeVente, marquerCommercialParti } from '../api/ressources'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 
 function todayISO() {
@@ -60,9 +60,7 @@ export default function Commerciaux() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <h1 className="mb-6 text-xl font-semibold text-slate-900">Commerciaux</h1>
 
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
@@ -156,7 +154,6 @@ export default function Commerciaux() {
             </ul>
           )}
         </div>
-      </div>
-    </div>
+    </Layout>
   )
 }

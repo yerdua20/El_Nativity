@@ -4,7 +4,7 @@ import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxi
 import apiClient from '../api/client'
 import { listerClients, listerCommerciaux, listerMouvements, listerProduits } from '../api/ressources'
 import logoNativite from '../assets/logo-nativite.png'
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
   { to: '/depot', titre: 'Nouveau dépôt', description: 'Déposer de la marchandise chez un client' },
@@ -137,11 +137,8 @@ export default function Dashboard() {
       .map((c) => ({ nom: c.nom, valeur: Number(c.solde_financier) })) ?? []
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-
-      <div className="mx-auto max-w-4xl px-6 pt-6">
-        <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-vert-600 to-vert-800 px-6 py-8 text-white shadow-sm">
+    <Layout>
+        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-vert-600 to-vert-800 px-6 py-8 text-white shadow-sm">
           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/20" />
           <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
           <div className="relative flex items-center gap-4">
@@ -156,9 +153,7 @@ export default function Dashboard() {
             </span>
           </div>
         </div>
-      </div>
 
-      <div className="mx-auto max-w-4xl px-6 py-8">
         <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <StatTile label="Clients" value={clients ? clients.length : '…'} accent="bg-or-400" />
           <StatTile
@@ -217,7 +212,6 @@ export default function Dashboard() {
             </Link>
           ))}
         </div>
-      </div>
-    </div>
+    </Layout>
   )
 }

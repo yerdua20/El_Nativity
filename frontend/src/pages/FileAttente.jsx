@@ -1,4 +1,4 @@
-import Nav from '../components/Nav'
+import Layout from '../components/Layout'
 import { useFileAttente } from '../offline/useFileAttente'
 import { reessayer, supprimerDeLaFile, synchroniser } from '../offline/sync'
 
@@ -12,9 +12,7 @@ export default function FileAttente() {
   const entrees = useFileAttente()
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Nav />
-      <div className="mx-auto max-w-4xl px-6 py-8">
+    <Layout>
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-xl font-semibold text-slate-900">Synchronisation</h1>
           <button
@@ -71,7 +69,6 @@ export default function FileAttente() {
             </ul>
           )}
         </div>
-      </div>
-    </div>
+    </Layout>
   )
 }
