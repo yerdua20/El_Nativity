@@ -138,13 +138,13 @@ export default function Dashboard() {
 
   return (
     <Layout>
-        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-vert-600 to-vert-800 px-6 py-8 text-white shadow-sm">
+        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-900 to-neutral-800 px-6 py-8 text-white shadow-sm">
           <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/20" />
           <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
           <div className="relative flex items-center gap-4">
             <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-white/40" />
             <div>
-              <p className="text-sm text-vert-100 capitalize">{FORMATTEUR_DATE.format(new Date())}</p>
+              <p className="text-sm text-neutral-300 capitalize">{FORMATTEUR_DATE.format(new Date())}</p>
               <h1 className="text-2xl font-semibold">La Nativité — Gestion</h1>
             </div>
             <span className="ml-auto flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs">
@@ -159,7 +159,7 @@ export default function Dashboard() {
           <StatTile
             label="Commerciaux actifs"
             value={commerciaux ? commerciauxActifs : '…'}
-            accent="bg-vert-400"
+            accent="bg-neutral-700"
           />
           <StatTile
             label="Marchandise en cours"
@@ -169,13 +169,13 @@ export default function Dashboard() {
           <StatTile
             label="Créances clients"
             value={clients ? formaterMontant(creancesTotal) : '…'}
-            accent="bg-vert-400"
+            accent="bg-neutral-700"
           />
         </div>
 
         <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <GraphiqueBarres titre="Marchandise par commercial" donnees={topCommerciaux} hex="#ce9a2e" />
-          <GraphiqueBarres titre="Plus grosses créances clients" donnees={topCreances} hex="#2e7359" />
+          <GraphiqueBarres titre="Plus grosses créances clients" donnees={topCreances} hex="#52525b" />
         </div>
 
         <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
@@ -204,7 +204,7 @@ export default function Dashboard() {
             <Link
               key={action.to}
               to={action.to}
-              className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-4 transition hover:border-vert-300 hover:shadow-sm"
+              className="group relative overflow-hidden rounded-lg border border-slate-200 bg-white p-4 transition hover:border-or-300 hover:shadow-sm"
             >
               <span className="absolute inset-y-0 left-0 w-1 scale-y-0 bg-or-400 transition-transform group-hover:scale-y-100" />
               <p className="font-medium text-slate-900">{action.titre}</p>
