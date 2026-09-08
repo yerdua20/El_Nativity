@@ -11,15 +11,15 @@
   --color-or-600: #8c6417;
   --color-or-700: #6b4c11;
 
-  --color-vert-50: #e7f1ec;
-  --color-vert-100: #c7e0d3;
-  --color-vert-200: #93c0aa;
-  --color-vert-300: #5b9c80;
-  --color-vert-400: #2e7359;
-  --color-vert-500: #164b37;
-  --color-vert-600: #123a2e;
-  --color-vert-700: #0d2a21;
-  --color-vert-800: #081c16;
+  --color-vert-50: #e6f7ee;
+  --color-vert-100: #c0ecd6;
+  --color-vert-200: #86dcb0;
+  --color-vert-300: #4bc98a;
+  --color-vert-400: #1eb06b;
+  --color-vert-500: #0f9d58;
+  --color-vert-600: #0c8049;
+  --color-vert-700: #0a653b;
+  --color-vert-800: #084d2d;
 }
 
 body {

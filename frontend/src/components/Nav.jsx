@@ -29,7 +29,7 @@ export default function Nav() {
   const echecs = entrees.filter((entree) => entree.statut === 'echec').length
 
   return (
-    <nav className="flex shrink-0 flex-col justify-between bg-gradient-to-b from-vert-700 to-vert-800 px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64">
+    <nav className="flex shrink-0 flex-col justify-between bg-gradient-to-b from-vert-500 to-vert-700 px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64">
       <div>
         <div className="mb-6 hidden items-center gap-3 rounded-lg bg-white/5 px-3 py-3 lg:flex">
           <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-or-300/60" />
