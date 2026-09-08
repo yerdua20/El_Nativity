@@ -19,7 +19,7 @@ const LIENS = [
 
 const lienClasse = ({ isActive }) =>
   `relative flex items-center rounded-md px-3 py-2 text-sm font-medium transition ${
-    isActive ? 'bg-or-400 text-neutral-900' : 'text-neutral-300 hover:bg-white/10'
+    isActive ? 'bg-neutral-900 text-or-300' : 'text-white/90 hover:bg-black/10'
   }`
 
 export default function Nav() {
@@ -29,13 +29,13 @@ export default function Nav() {
   const echecs = entrees.filter((entree) => entree.statut === 'echec').length
 
   return (
-    <nav className="flex shrink-0 flex-col justify-between bg-gradient-to-b from-neutral-700 to-neutral-600 px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64">
+    <nav className="flex shrink-0 flex-col justify-between bg-gradient-to-b from-or-500 to-or-700 px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64">
       <div>
-        <div className="mb-6 hidden items-center gap-3 rounded-lg bg-white/5 px-3 py-3 lg:flex">
-          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-or-300/60" />
+        <div className="mb-6 hidden items-center gap-3 rounded-lg bg-black/10 px-3 py-3 lg:flex">
+          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-white/60" />
           <div>
             <span className="block text-lg leading-tight font-semibold text-white">La Nativité</span>
-            <span className="block text-xs text-neutral-400">Gestion</span>
+            <span className="block text-xs text-white/70">Gestion</span>
           </div>
         </div>
         <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap lg:gap-1">
@@ -45,7 +45,7 @@ export default function Nav() {
               {lien.to === '/synchro' && enAttente + echecs > 0 && (
                 <span
                   className={`ml-1.5 rounded-full px-1.5 py-0.5 text-xs ${
-                    echecs > 0 ? 'bg-red-600 text-white' : 'bg-amber-500 text-white'
+                    echecs > 0 ? 'bg-red-600 text-white' : 'bg-white text-or-700'
                   }`}
                 >
                   {enAttente + echecs}
@@ -57,7 +57,7 @@ export default function Nav() {
       </div>
       <button
         onClick={logout}
-        className="mt-4 rounded border border-white/20 px-3 py-1.5 text-sm text-neutral-300 hover:bg-white/10"
+        className="mt-4 rounded border border-black/20 px-3 py-1.5 text-sm text-white hover:bg-black/10"
       >
         Déconnexion
       </button>

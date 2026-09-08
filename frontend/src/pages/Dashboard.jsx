@@ -138,17 +138,17 @@ export default function Dashboard() {
 
   return (
     <Layout>
-        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-700 to-neutral-600 px-6 py-8 text-white shadow-sm">
-          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/20" />
-          <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
+        <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-or-500 to-or-700 px-6 py-8 text-white shadow-sm">
+          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-black/10" />
+          <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/10" />
           <div className="relative flex items-center gap-4">
-            <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-white/40" />
+            <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-white/60" />
             <div>
-              <p className="text-sm text-neutral-300 capitalize">{FORMATTEUR_DATE.format(new Date())}</p>
+              <p className="text-sm text-white/80 capitalize">{FORMATTEUR_DATE.format(new Date())}</p>
               <h1 className="text-2xl font-semibold">La Nativité — Gestion</h1>
             </div>
-            <span className="ml-auto flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs">
-              <span className={`h-1.5 w-1.5 rounded-full ${sante === 'ok' ? 'bg-or-300' : 'bg-red-400'}`} />
+            <span className="ml-auto flex items-center gap-1.5 rounded-full bg-black/10 px-3 py-1 text-xs">
+              <span className={`h-1.5 w-1.5 rounded-full ${sante === 'ok' ? 'bg-white' : 'bg-red-800'}`} />
               API {sante === 'ok' ? 'connectée' : sante}
             </span>
           </div>
