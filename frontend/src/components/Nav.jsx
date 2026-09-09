@@ -28,8 +28,8 @@ const LIENS = [
   { to: '/retours', label: 'Retours', icon: Undo2 },
   { to: '/affectation', label: 'Affectation', icon: ArrowLeftRight },
   { to: '/encaissement', label: 'Encaissement', icon: CreditCard },
-  { to: '/historique', label: 'Historique', icon: History },
   { to: '/catalogue', label: 'Catalogue', icon: BookOpen },
+  { to: '/historique', label: 'Historique', icon: History },
   { to: '/profil', label: 'Paramètres', icon: Settings },
 ]
 
@@ -57,7 +57,7 @@ export default function Nav() {
 
         <button
           onClick={synchroniser}
-          className="relative mb-4 flex w-full items-center gap-2.5 rounded-md border border-green-300 bg-green-50 px-3 py-2 text-sm font-medium text-green-800 hover:bg-green-100"
+          className="relative mb-4 flex w-full items-center gap-2.5 rounded-2xl border border-green-300 bg-green-50 px-3 py-2 text-sm font-medium text-green-800 hover:bg-green-100"
         >
           <RefreshCw className="h-4 w-4 shrink-0" />
           Synchroniser
