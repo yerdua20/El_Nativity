@@ -1,5 +1,7 @@
+import { Undo2 } from 'lucide-react'
 import { useState } from 'react'
 import { listerClients, listerCommerciaux, listerPointsDeVente, listerProduits } from '../api/ressources'
+import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
@@ -43,38 +45,36 @@ export default function Retours() {
 
   return (
     <Layout>
-        <h1 className="mb-6 text-xl font-semibold text-slate-900">Retour de marchandise</h1>
+      <EnTeteBandeau
+        titre="Retours"
+        sousTitre="Enregistrer un retour de marchandise chez un client"
+        icone={Undo2}
+      />
 
-        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="mb-4 flex gap-4 text-sm">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={type === 'RETOUR_CLIENT'}
-                onChange={() => setType('RETOUR_CLIENT')}
-              />
-              Retour du client vers le commercial
-            </label>
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                checked={type === 'RETOUR_DEPOT'}
-                onChange={() => setType('RETOUR_DEPOT')}
-              />
-              Retour du commercial vers le dépôt
-            </label>
-          </div>
+      <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
+        <div className="mb-4 flex gap-4 text-sm">
+          <label className="flex items-center gap-2">
+            <input type="radio" checked={type === 'RETOUR_CLIENT'} onChange={() => setType('RETOUR_CLIENT')} />
+            Retour du client vers le commercial
+          </label>
+          <label className="flex items-center gap-2">
+            <input type="radio" checked={type === 'RETOUR_DEPOT'} onChange={() => setType('RETOUR_DEPOT')} />
+            Retour du commercial vers le dépôt
+          </label>
+        </div>
 
-          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {type === 'RETOUR_CLIENT' && (
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {type === 'RETOUR_CLIENT' && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Client</label>
               <select
-                className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+                className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
                 value={clientId}
                 onChange={(event) => setClientId(event.target.value)}
                 required
               >
                 <option value="" disabled>
-                  Client
+                  Choisir un client
                 </option>
                 {clients.map((client) => (
                   <option key={client.id} value={client.id}>
@@ -82,17 +82,20 @@ export default function Retours() {
                   </option>
                 ))}
               </select>
-            )}
+            </div>
+          )}
 
-            {type === 'RETOUR_DEPOT' && (
+          {type === 'RETOUR_DEPOT' && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">Dépôt</label>
               <select
-                className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+                className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
                 value={pointDeVenteId}
                 onChange={(event) => setPointDeVenteId(event.target.value)}
                 required
               >
                 <option value="" disabled>
-                  Dépôt
+                  Choisir un dépôt
                 </option>
                 {pointsDeVente.map((pdv) => (
                   <option key={pdv.id} value={pdv.id}>
@@ -100,16 +103,19 @@ export default function Retours() {
                   </option>
                 ))}
               </select>
-            )}
+            </div>
+          )}
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Commercial</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={commercialId}
               onChange={(event) => setCommercialId(event.target.value)}
               required
             >
               <option value="" disabled>
-                Commercial
+                Choisir un commercial
               </option>
               {commerciaux.map((commercial) => (
                 <option key={commercial.id} value={commercial.id}>
@@ -117,15 +123,18 @@ export default function Retours() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Produit</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={produitId}
               onChange={(event) => setProduitId(event.target.value)}
               required
             >
               <option value="" disabled>
-                Produit
+                Choisir un produit
               </option>
               {produits.map((produit) => (
                 <option key={produit.id} value={produit.id}>
@@ -133,29 +142,32 @@ export default function Retours() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Quantité</label>
             <input
               type="number"
               step="0.01"
               min="0.01"
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              placeholder="Quantité"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={quantite}
               onChange={(event) => setQuantite(event.target.value)}
               required
             />
           </div>
+        </div>
 
-          {succes && <p className="mb-3 text-sm text-green-600">{succes}</p>}
+        {succes && <p className="mb-3 text-sm text-green-600">{succes}</p>}
 
-          <button
-            type="submit"
-            disabled={enCours}
-            className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {enCours ? 'Enregistrement...' : 'Enregistrer le retour'}
-          </button>
-        </form>
+        <button
+          type="submit"
+          disabled={enCours}
+          className="rounded bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
+        >
+          {enCours ? 'Enregistrement...' : 'Enregistrer le retour'}
+        </button>
+      </form>
     </Layout>
   )
 }

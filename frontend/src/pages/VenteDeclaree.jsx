@@ -1,5 +1,7 @@
+import { ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
 import { listerClients, listerCommerciaux, listerProduits } from '../api/ressources'
+import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
@@ -39,22 +41,28 @@ export default function VenteDeclaree() {
 
   return (
     <Layout>
-        <h1 className="mb-6 text-xl font-semibold text-slate-900">Vente déclarée par un client</h1>
-        <p className="mb-6 text-sm text-slate-500">
-          Le client déclare avoir vendu une partie de la marchandise déposée : son solde marchandise
-          diminue d'autant et son solde financier augmente (vente désormais reconnue).
-        </p>
+      <EnTeteBandeau
+        titre="Vente déclarée"
+        sousTitre="Enregistrer une vente effectuée par un client"
+        icone={ShoppingCart}
+      />
+      <p className="mb-4 text-sm text-slate-500">
+        Le solde marchandise du client diminue d'autant et son solde financier augmente (vente
+        désormais reconnue).
+      </p>
 
-        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Client</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={clientId}
               onChange={(event) => setClientId(event.target.value)}
               required
             >
               <option value="" disabled>
-                Client
+                Choisir un client
               </option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
@@ -62,15 +70,18 @@ export default function VenteDeclaree() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Commercial</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={commercialId}
               onChange={(event) => setCommercialId(event.target.value)}
               required
             >
               <option value="" disabled>
-                Commercial
+                Choisir un commercial
               </option>
               {commerciaux.map((commercial) => (
                 <option key={commercial.id} value={commercial.id}>
@@ -78,15 +89,18 @@ export default function VenteDeclaree() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Produit</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={produitId}
               onChange={(event) => setProduitId(event.target.value)}
               required
             >
               <option value="" disabled>
-                Produit
+                Choisir un produit
               </option>
               {produits.map((produit) => (
                 <option key={produit.id} value={produit.id}>
@@ -94,29 +108,32 @@ export default function VenteDeclaree() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Quantité vendue</label>
             <input
               type="number"
               step="0.01"
               min="0.01"
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              placeholder="Quantité vendue"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={quantite}
               onChange={(event) => setQuantite(event.target.value)}
               required
             />
           </div>
+        </div>
 
-          {succes && <p className="mb-3 text-sm text-green-600">{succes}</p>}
+        {succes && <p className="mb-3 text-sm text-green-600">{succes}</p>}
 
-          <button
-            type="submit"
-            disabled={enCours}
-            className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {enCours ? 'Enregistrement...' : 'Déclarer la vente'}
-          </button>
-        </form>
+        <button
+          type="submit"
+          disabled={enCours}
+          className="rounded bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
+        >
+          {enCours ? 'Enregistrement...' : 'Déclarer la vente'}
+        </button>
+      </form>
     </Layout>
   )
 }

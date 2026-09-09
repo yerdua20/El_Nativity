@@ -1,5 +1,7 @@
+import { CreditCard } from 'lucide-react'
 import { useState } from 'react'
 import { listerClients, listerCommerciaux } from '../api/ressources'
+import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
@@ -44,22 +46,24 @@ export default function Encaissement() {
 
   return (
     <Layout>
-        <h1 className="mb-6 text-xl font-semibold text-slate-900">Encaissement</h1>
-        <p className="mb-6 text-sm text-slate-500">
-          Diminue le solde financier du client. Si un commercial a physiquement collecté l'argent,
-          son propre solde financier augmente d'autant, en attendant la remise à la société.
-        </p>
+      <EnTeteBandeau titre="Encaissement" sousTitre="Enregistrer un paiement d'un client" icone={CreditCard} />
+      <p className="mb-4 text-sm text-slate-500">
+        Diminue le solde financier du client. Si un commercial a physiquement collecté l'argent, son
+        propre solde financier augmente d'autant, en attendant la remise à la société.
+      </p>
 
-        <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
+        <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Client</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={clientId}
               onChange={(event) => setClientId(event.target.value)}
               required
             >
               <option value="" disabled>
-                Client
+                Choisir un client
               </option>
               {clients.map((client) => (
                 <option key={client.id} value={client.id}>
@@ -67,9 +71,12 @@ export default function Encaissement() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Mode de paiement</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={moyenPaiement}
               onChange={(event) => setMoyenPaiement(event.target.value)}
               required
@@ -80,42 +87,48 @@ export default function Encaissement() {
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Collecté par (optionnel)</label>
             <select
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={collectePar}
               onChange={(event) => setCollectePar(event.target.value)}
             >
-              <option value="">Collecté par (optionnel)</option>
+              <option value="">Aucun</option>
               {commerciaux.map((commercial) => (
                 <option key={commercial.id} value={commercial.id}>
                   {commercial.prenom} {commercial.nom}
                 </option>
               ))}
             </select>
+          </div>
 
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Montant</label>
             <input
               type="number"
               step="0.01"
               min="0.01"
-              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-slate-500 focus:outline-none"
-              placeholder="Montant"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={montant}
               onChange={(event) => setMontant(event.target.value)}
               required
             />
           </div>
+        </div>
 
-          {succes && <p className="mb-3 text-sm text-green-600">{succes}</p>}
+        {succes && <p className="mb-3 text-sm text-green-600">{succes}</p>}
 
-          <button
-            type="submit"
-            disabled={enCours}
-            className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
-          >
-            {enCours ? 'Enregistrement...' : 'Enregistrer l\'encaissement'}
-          </button>
-        </form>
+        <button
+          type="submit"
+          disabled={enCours}
+          className="rounded bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
+        >
+          {enCours ? 'Enregistrement...' : "Enregistrer l'encaissement"}
+        </button>
+      </form>
     </Layout>
   )
 }
