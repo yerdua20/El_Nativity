@@ -667,8 +667,8 @@ export default function Profil() {
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-400/20" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
         <div className="relative flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10">
-            <IconSettings className="h-7 w-7" />
+          <div className="flex h-20 w-12 shrink-0 items-center justify-center rounded-full bg-transparent">
+            <IconSettings className="h-10 w-10" />
           </div>
           <div>
             <h1 className="text-2xl font-semibold">Paramètres</h1>
