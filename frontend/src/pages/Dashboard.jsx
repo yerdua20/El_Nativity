@@ -4,6 +4,7 @@ import {
   CreditCard,
   FileText,
   History,
+  Home,
   Package,
   PackagePlus,
   RefreshCw,
@@ -178,9 +179,14 @@ export default function Dashboard() {
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-400/20" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
         <div className="relative flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold">Tableau de bord</h1>
-            <p className="text-sm text-neutral-300">Vue d'ensemble de votre activité</p>
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
+              <Home className="h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+              <p className="text-sm text-neutral-300">Vue d'ensemble de votre activité</p>
+            </div>
           </div>
           <div className="flex shrink-0 items-center gap-3">
             <span className="hidden text-sm text-neutral-300 capitalize sm:inline">
