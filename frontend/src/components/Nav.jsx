@@ -15,6 +15,7 @@ const LIENS = [
   { to: '/historique', label: 'Historique' },
   { to: '/catalogue', label: 'Catalogue' },
   { to: '/synchro', label: 'Synchronisation' },
+  { to: '/profil', label: 'Paramètres' },
 ]
 
 const lienClasse = ({ isActive }) =>
@@ -32,10 +33,9 @@ export default function Nav() {
     <nav className="flex shrink-0 flex-col justify-between border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
       <div>
         <div className="mb-6 hidden items-center gap-3 px-2 lg:flex">
-          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full" />
+          <img src={logoNativite} alt="" className="h-18 w-18 rounded-full" />
           <div>
-            <span className="block text-lg leading-tight font-semibold text-slate-900">La Nativité</span>
-            <span className="block text-xs text-slate-500">Gestion</span>
+            <span className="block text-sm leading-tight font-semibold text-slate-1000">Espace de gestion</span>
           </div>
         </div>
         <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap lg:gap-1">
@@ -57,7 +57,7 @@ export default function Nav() {
       </div>
       <button
         onClick={logout}
-        className="mt-4 rounded border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+        className="mt-4 rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-gold-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
       >
         Déconnexion
       </button>

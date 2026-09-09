@@ -72,3 +72,18 @@ export async function listerEncaissements(url = '/encaissements/') {
   const { data } = await apiClient.get(url)
   return data
 }
+
+export async function lireMoi() {
+  const { data } = await apiClient.get('/auth/moi/')
+  return data
+}
+
+export async function modifierMoi(payload) {
+  const { data } = await apiClient.patch('/auth/moi/', payload)
+  return data
+}
+
+export async function changerMotDePasse(payload) {
+  const { data } = await apiClient.post('/auth/changer-mot-de-passe/', payload)
+  return data
+}

@@ -12,6 +12,7 @@ import FileAttente from './pages/FileAttente'
 import Historique from './pages/Historique'
 import Login from './pages/Login'
 import NouveauDepot from './pages/NouveauDepot'
+import Profil from './pages/Profil'
 import Retours from './pages/Retours'
 import VenteDeclaree from './pages/VenteDeclaree'
 
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/historique" element={protegee(<Historique />)} />
           <Route path="/synchro" element={protegee(<FileAttente />)} />
           <Route path="/catalogue" element={protegee(<Catalogue />)} />
+          <Route path="/profil" element={protegee(<Profil />)} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
