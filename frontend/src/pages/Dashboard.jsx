@@ -138,14 +138,19 @@ export default function Dashboard() {
 
   return (
     <Layout>
+      
         <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-700 to-neutral-600 px-6 py-8 text-white shadow-sm">
-          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/20" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(206,154,46,0.35)_1.5px,transparent_1.5px)] bg-[length:22px_22px]" />
+          <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(206,154,46,0.08)_0px,rgba(206,154,46,0.08)_2px,transparent_2px,transparent_18px)]" />
+          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full border-2 border-or-400/30" />
+          <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/15" />
+          <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-400/20" />
           <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
           <div className="relative flex items-center gap-4">
-            <img src={logoNativite} alt="" className="h-14 w-14 rounded-full ring-2 ring-white/40" />
+            <img src={logoNativite} alt="" className="h-18 w-18 rounded-full ring-2 ring-white/40" />
             <div>
               <p className="text-sm text-neutral-300 capitalize">{FORMATTEUR_DATE.format(new Date())}</p>
-              <h1 className="text-2xl font-semibold">La Nativité — Gestion</h1>
+              <h1 className="text-2xl font-semibold">Gestion - Suivi - Contrôle</h1>
             </div>
             <span className="ml-auto flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs">
               <span className={`h-1.5 w-1.5 rounded-full ${sante === 'ok' ? 'bg-or-300' : 'bg-red-400'}`} />
