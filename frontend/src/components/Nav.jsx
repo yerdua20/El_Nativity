@@ -49,9 +49,9 @@ export default function Nav() {
     <nav className="flex shrink-0 flex-col justify-between border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
       <div>
         <div className="mb-4 hidden items-center gap-3 px-2 lg:flex">
-          <img src={logoNativite} alt="" className="h-14 w-14 rounded-full" />
+          <img src={logoNativite} alt="" className="h-16 w-16 rounded-full" />
           <div>
-            <span className="block text-sm leading-tight font-semibold text-slate-900">Espace de gestion</span>
+            <span className="block text-base leading-tight font-semibold text-slate-900">Espace de gestion</span>
           </div>
         </div>
 
