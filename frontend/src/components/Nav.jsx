@@ -83,7 +83,7 @@ export default function Nav() {
       </div>
       <button
         onClick={logout}
-        className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-base text-slate-700 hover:bg-or-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
+        className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-base text-slate-700 hover:bg-or-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
       >
         <LogOut className="h-5 w-5" />
         Déconnexion

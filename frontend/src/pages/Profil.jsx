@@ -67,7 +67,7 @@ function Bouton({ children, ...props }) {
   return (
     <button
       {...props}
-      className="rounded bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
+      className="rounded-2xl bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
     >
       {children}
     </button>
@@ -314,7 +314,7 @@ function OngletUtilisateurs() {
         <h2 className="text-lg font-semibold text-slate-900">Gestion des utilisateurs</h2>
         <button
           onClick={() => setAjoutOuvert((v) => !v)}
-          className="flex items-center gap-1.5 rounded bg-or-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-or-600"
+          className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-1.5 text-sm font-medium text-white hover:bg-or-600"
         >
           <Plus className="h-4 w-4" />
           Ajouter un utilisateur

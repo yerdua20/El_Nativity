@@ -128,7 +128,7 @@ export default function AffectationCommercial() {
         <button
           type="submit"
           disabled={enCours}
-          className="rounded bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
+          className="rounded-2xl bg-or-500 px-4 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
         >
           {enCours ? 'Enregistrement...' : 'Affecter'}
         </button>

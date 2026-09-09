@@ -60,14 +60,14 @@ function BoutonsPagination({ precedent, suivant }) {
       <button
         onClick={precedent}
         disabled={!precedent}
-        className="rounded border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+        className="rounded-2xl border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-100 disabled:opacity-40"
       >
         Précédent
       </button>
       <button
         onClick={suivant}
         disabled={!suivant}
-        className="rounded border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-100 disabled:opacity-40"
+        className="rounded-2xl border border-slate-300 px-3 py-1 text-slate-700 hover:bg-slate-100 disabled:opacity-40"
       >
         Suivant
       </button>

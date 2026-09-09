@@ -80,7 +80,7 @@ export default function Commerciaux() {
       <div className="mb-4 flex justify-end">
         <button
           onClick={() => setFormulaireOuvert((v) => !v)}
-          className="flex items-center gap-1.5 rounded bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+          className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
         >
           <Plus className="h-4 w-4" />
           Nouveau commercial
@@ -137,7 +137,7 @@ export default function Commerciaux() {
           <button
             type="submit"
             disabled={enCours}
-            className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
           >
             {enCours ? 'Création...' : 'Créer'}
           </button>
