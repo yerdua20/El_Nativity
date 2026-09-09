@@ -28,9 +28,13 @@ export default function Login() {
   return (
     <div className="flex min-h-screen">
       <div className="relative hidden w-full max-w-md flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900 p-10 text-center text-white lg:flex">
-        <div className="absolute -top-16 -left-16 h-64 w-64 rounded-full bg-or-400/10" />
-        <div className="absolute -bottom-24 -right-10 h-72 w-72 rounded-full bg-white/5" />
-        <div className="absolute top-1/3 -right-20 h-40 w-40 rounded-full bg-or-400/10" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(206,154,46,0.35)_1.5px,transparent_1.5px)] bg-[length:22px_22px]" />
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(206,154,46,0.08)_0px,rgba(206,154,46,0.08)_2px,transparent_2px,transparent_18px)]" />
+        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full border-2 border-or-400/30" />
+        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-or-400/15" />
+        <div className="absolute -bottom-28 -right-16 h-80 w-80 rounded-full border-2 border-or-400/20" />
+        <div className="absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-white/5" />
+        <div className="absolute top-1/4 -right-16 h-44 w-44 rounded-full border border-or-400/30" />
         <img
           src={logoNativite}
           alt="La Nativité"
