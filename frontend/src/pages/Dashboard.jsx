@@ -180,8 +180,8 @@ export default function Dashboard() {
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
         <div className="relative flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
-              <Home className="h-6 w-6" />
+            <div className="flex h-20 w-12 shrink-0 items-center justify-center rounded-full bg-transparent">
+              <Home className="h-10 w-10" />
             </div>
             <div>
               <h1 className="text-2xl font-semibold">Tableau de bord</h1>

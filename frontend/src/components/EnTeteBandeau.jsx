@@ -13,8 +13,8 @@ export default function EnTeteBandeau({ titre, sousTitre, icone: Icone }) {
       <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
       <div className="relative flex items-center gap-4">
         {Icone && (
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/10">
-            <Icone className="h-6 w-6" />
+          <div className="flex h-20 w-12 shrink-0 items-center justify-center rounded-full bg-transparent">
+            <Icone className="h-10 w-10" />
           </div>
         )}
         <div>
