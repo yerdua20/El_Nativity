@@ -87,3 +87,44 @@ export async function changerMotDePasse(payload) {
   const { data } = await apiClient.post('/auth/changer-mot-de-passe/', payload)
   return data
 }
+
+export async function lireEntreprise() {
+  const { data } = await apiClient.get('/entreprise/')
+  return data
+}
+
+export async function modifierEntreprise(payload) {
+  const { data } = await apiClient.patch('/entreprise/', payload)
+  return data
+}
+
+export async function listerUtilisateurs() {
+  const { data } = await apiClient.get('/utilisateurs/')
+  return data.results
+}
+
+export async function creerUtilisateur(payload) {
+  const { data } = await apiClient.post('/utilisateurs/', payload)
+  return data
+}
+
+export async function modifierUtilisateur(id, payload) {
+  const { data } = await apiClient.patch(`/utilisateurs/${id}/`, payload)
+  return data
+}
+
+export async function supprimerUtilisateur(id) {
+  await apiClient.delete(`/utilisateurs/${id}/`)
+}
+
+export async function exporterCSV(jeu) {
+  const response = await apiClient.get('/export/', { params: { jeu }, responseType: 'blob' })
+  const url = window.URL.createObjectURL(new Blob([response.data]))
+  const lien = document.createElement('a')
+  lien.href = url
+  lien.download = `${jeu}.csv`
+  document.body.appendChild(lien)
+  lien.click()
+  lien.remove()
+  window.URL.revokeObjectURL(url)
+}
