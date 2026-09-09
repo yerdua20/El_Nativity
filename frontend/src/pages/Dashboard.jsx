@@ -7,7 +7,6 @@ import {
   Home,
   Package,
   PackagePlus,
-  RefreshCw,
   ShoppingCart,
   TrendingUp,
   Undo2,
@@ -128,7 +127,6 @@ export default function Dashboard() {
   const [commerciaux, setCommerciaux] = useState(null)
   const [mouvements, setMouvements] = useState(null)
   const [produits, setProduits] = useState([])
-  const [actualisation, setActualisation] = useState(false)
 
   function charger() {
     listerClients().then(setClients)
@@ -138,12 +136,6 @@ export default function Dashboard() {
   }
 
   useEffect(charger, [])
-
-  async function handleActualiser() {
-    setActualisation(true)
-    charger()
-    setTimeout(() => setActualisation(false), 500)
-  }
 
   const nomsProduits = Object.fromEntries(produits.map((p) => [p.id, p.nom]))
 
@@ -192,13 +184,6 @@ export default function Dashboard() {
             <span className="hidden text-sm text-neutral-300 capitalize sm:inline">
               {FORMATTEUR_DATE.format(new Date())}
             </span>
-            <button
-              onClick={handleActualiser}
-              title="Actualiser"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
-            >
-              <RefreshCw className={`h-4 w-4 ${actualisation ? 'animate-spin' : ''}`} />
-            </button>
           </div>
         </div>
       </div>
