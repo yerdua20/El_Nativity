@@ -17,7 +17,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import {
-  changerMotDePasse,
   creerUtilisateur,
   exporterCSV,
   lireEntreprise,
@@ -26,7 +25,6 @@ import {
   listerPointsDeVente,
   listerUtilisateurs,
   modifierEntreprise,
-  modifierMoi,
   modifierUtilisateur,
   supprimerUtilisateur,
 } from '../api/ressources'
@@ -73,128 +71,6 @@ function Bouton({ children, ...props }) {
     >
       {children}
     </button>
-  )
-}
-
-// --- Onglet Compte : infos personnelles + mot de passe personnel -------
-
-function OngletCompte({ moi, setMoi }) {
-  const [email, setEmail] = useState(moi.email)
-  const [succesEmail, setSuccesEmail] = useState('')
-  const [erreurEmail, setErreurEmail] = useState('')
-  const [enCoursEmail, setEnCoursEmail] = useState(false)
-
-  const [ancien, setAncien] = useState('')
-  const [nouveau, setNouveau] = useState('')
-  const [confirmation, setConfirmation] = useState('')
-  const [succesMdp, setSuccesMdp] = useState('')
-  const [erreurMdp, setErreurMdp] = useState('')
-  const [enCoursMdp, setEnCoursMdp] = useState(false)
-
-  async function handleSubmitEmail(event) {
-    event.preventDefault()
-    setSuccesEmail('')
-    setErreurEmail('')
-    setEnCoursEmail(true)
-    try {
-      const data = await modifierMoi({ email })
-      setMoi(data)
-      setSuccesEmail('Email mis à jour.')
-    } catch {
-      setErreurEmail("Impossible de mettre à jour l'email.")
-    } finally {
-      setEnCoursEmail(false)
-    }
-  }
-
-  async function handleSubmitMdp(event) {
-    event.preventDefault()
-    setSuccesMdp('')
-    setErreurMdp('')
-    if (nouveau !== confirmation) {
-      setErreurMdp('La confirmation ne correspond pas au nouveau mot de passe.')
-      return
-    }
-    setEnCoursMdp(true)
-    try {
-      await changerMotDePasse({ ancien_mot_de_passe: ancien, nouveau_mot_de_passe: nouveau })
-      setSuccesMdp('Mot de passe modifié.')
-      setAncien('')
-      setNouveau('')
-      setConfirmation('')
-    } catch (error) {
-      const detail = error.response?.data?.detail
-      setErreurMdp(Array.isArray(detail) ? detail.join(' ') : detail || 'Impossible de changer le mot de passe.')
-    } finally {
-      setEnCoursMdp(false)
-    }
-  }
-
-  return (
-    <div className="space-y-8">
-      <form onSubmit={handleSubmitEmail}>
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">Informations du compte</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Nom d'utilisateur</label>
-            <ChampIcone icon={User} value={moi.username} disabled />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Email</label>
-            <ChampIcone icon={Mail} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </div>
-        </div>
-        {erreurEmail && <p className="mt-3 text-sm text-red-600">{erreurEmail}</p>}
-        {succesEmail && <p className="mt-3 text-sm text-green-600">{succesEmail}</p>}
-        <Bouton type="submit" disabled={enCoursEmail} className="mt-4">
-          {enCoursEmail ? 'Enregistrement...' : "Mettre à jour l'email"}
-        </Bouton>
-      </form>
-
-      <form onSubmit={handleSubmitMdp} className="border-t border-slate-200 pt-8">
-        <h2 className="mb-4 text-lg font-semibold text-slate-900">Mot de passe</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-700">Mot de passe actuel</label>
-            <ChampIcone
-              icon={Lock}
-              type="password"
-              value={ancien}
-              onChange={(e) => setAncien(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Nouveau mot de passe</label>
-            <ChampIcone
-              icon={Lock}
-              type="password"
-              value={nouveau}
-              onChange={(e) => setNouveau(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Confirmer</label>
-            <ChampIcone
-              icon={Lock}
-              type="password"
-              value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-        </div>
-        {erreurMdp && <p className="mt-3 text-sm text-red-600">{erreurMdp}</p>}
-        {succesMdp && <p className="mt-3 text-sm text-green-600">{succesMdp}</p>}
-        <Bouton type="submit" disabled={enCoursMdp} className="mt-4">
-          {enCoursMdp ? 'Enregistrement...' : 'Changer le mot de passe'}
-        </Bouton>
-      </form>
-    </div>
   )
 }
 
@@ -625,7 +501,7 @@ export default function Profil() {
   const [moi, setMoi] = useState(null)
   const [commercial, setCommercial] = useState(undefined)
   const [entreprise, setEntreprise] = useState(undefined)
-  const [ongletActif, setOngletActif] = useState('compte')
+  const [ongletActif, setOngletActif] = useState(null)
 
   useEffect(() => {
     lireMoi().then(setMoi)
@@ -645,7 +521,6 @@ export default function Profil() {
   }
 
   const onglets = [
-    { id: 'compte', label: 'Compte', icon: User },
     ...(commercial ? [{ id: 'commercial', label: 'Commercial', icon: Briefcase }] : []),
     ...(moi.is_staff
       ? [
@@ -656,6 +531,7 @@ export default function Profil() {
         ]
       : []),
   ]
+  const actif = ongletActif ?? onglets[0]?.id
 
   return (
     <Layout>
@@ -681,13 +557,13 @@ export default function Profil() {
         </div>
       </div>
 
-      <div className="mb-6 flex flex-wrap gap-1 border-b border-slate-200">
+      <div className="mb-6 flex border-b border-slate-200">
         {onglets.map((onglet) => (
           <button
             key={onglet.id}
             onClick={() => setOngletActif(onglet.id)}
-            className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
-              ongletActif === onglet.id
+            className={`flex flex-1 items-center justify-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition ${
+              actif === onglet.id
                 ? 'border-or-500 text-or-600'
                 : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}
@@ -699,16 +575,15 @@ export default function Profil() {
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white p-6">
-        {ongletActif === 'compte' && <OngletCompte moi={moi} setMoi={setMoi} />}
-        {ongletActif === 'commercial' && commercial && <OngletCommercial commercial={commercial} />}
-        {ongletActif === 'general' && entreprise && (
+        {actif === 'commercial' && commercial && <OngletCommercial commercial={commercial} />}
+        {actif === 'general' && entreprise && (
           <OngletGeneral entreprise={entreprise} setEntreprise={setEntreprise} />
         )}
-        {ongletActif === 'utilisateurs' && moi.is_staff && <OngletUtilisateurs />}
-        {ongletActif === 'securite' && entreprise && (
+        {actif === 'utilisateurs' && moi.is_staff && <OngletUtilisateurs />}
+        {actif === 'securite' && entreprise && (
           <OngletSecurite entreprise={entreprise} setEntreprise={setEntreprise} />
         )}
-        {ongletActif === 'donnees' && moi.is_staff && <OngletDonnees />}
+        {actif === 'donnees' && moi.is_staff && <OngletDonnees />}
       </div>
     </Layout>
   )
