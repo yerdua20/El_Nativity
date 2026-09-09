@@ -30,6 +30,52 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 
+class Entreprise(models.Model):
+    """
+    Reglages globaux de l'entreprise : un seul enregistrement (pk=1).
+    Regroupe les infos generales (onglet "Général" de Paramètres) et la
+    politique de mot de passe (onglet "Sécurité"), appliquee par
+    core.validators.PolitiqueMotDePasseValidator.
+    """
+
+    class Devise(models.TextChoices):
+        XOF = "XOF", "Franc CFA (XOF)"
+        EUR = "EUR", "Euro"
+        USD = "USD", "Dollar US"
+
+    nom = models.CharField(max_length=200, default="La Nativité")
+    email_contact = models.EmailField(blank=True)
+    telephone = models.CharField(max_length=30, blank=True)
+    adresse = models.CharField(max_length=255, blank=True)
+    devise = models.CharField(max_length=3, choices=Devise.choices, default=Devise.XOF)
+
+    mdp_longueur_min = models.PositiveSmallIntegerField(default=8)
+    mdp_exiger_majuscule = models.BooleanField(default=True)
+    mdp_exiger_chiffre = models.BooleanField(default=True)
+    mdp_exiger_caractere_special = models.BooleanField(default=False)
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Entreprise"
+        verbose_name_plural = "Entreprise"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("Le réglage Entreprise ne peut pas être supprimé.")
+
+    @classmethod
+    def charger(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def __str__(self):
+        return self.nom
+
+
 class PointDeVente(models.Model):
     """Un dépôt central, un bar ou le restaurant."""
 

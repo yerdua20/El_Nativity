@@ -1,9 +1,13 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from core.models import (
     Client,
     Commercial,
     Encaissement,
+    Entreprise,
     MouvementStock,
     PointDeVente,
     Produit,
@@ -11,6 +15,52 @@ from core.models import (
 )
 from core.permissions import commercial_de
 from core.services import enregistrer_encaissement, enregistrer_mouvement_stock
+
+User = get_user_model()
+
+
+class EntrepriseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entreprise
+        fields = [
+            "nom",
+            "email_contact",
+            "telephone",
+            "adresse",
+            "devise",
+            "mdp_longueur_min",
+            "mdp_exiger_majuscule",
+            "mdp_exiger_chiffre",
+            "mdp_exiger_caractere_special",
+            "updated_at",
+        ]
+        read_only_fields = ["updated_at"]
+
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "email", "password", "is_staff", "is_active", "date_joined"]
+        read_only_fields = ["date_joined"]
+
+    def create(self, validated_data):
+        password = validated_data.pop("password", None)
+        if not password:
+            raise serializers.ValidationError({"password": "Mot de passe requis à la création."})
+        try:
+            validate_password(password)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"password": list(exc.messages)})
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+    def update(self, instance, validated_data):
+        validated_data.pop("password", None)
+        return super().update(instance, validated_data)
 
 
 class PointDeVenteSerializer(serializers.ModelSerializer):

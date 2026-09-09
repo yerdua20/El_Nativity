@@ -4,11 +4,23 @@ from core.models import (
     Client,
     Commercial,
     Encaissement,
+    Entreprise,
     MouvementStock,
     PointDeVente,
     Produit,
     Tarif,
 )
+
+
+@admin.register(Entreprise)
+class EntrepriseAdmin(admin.ModelAdmin):
+    list_display = ("nom", "devise", "mdp_longueur_min")
+
+    def has_add_permission(self, request):
+        return not Entreprise.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(PointDeVente)

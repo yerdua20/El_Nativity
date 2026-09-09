@@ -1,10 +1,13 @@
+import csv
+
+from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.http import JsonResponse
+from django.db.models import ProtectedError, Q
+from django.http import HttpResponse, JsonResponse
 from django.utils.dateparse import parse_datetime
-from django.db.models import Q
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -12,6 +15,7 @@ from core.models import (
     Client,
     Commercial,
     Encaissement,
+    Entreprise,
     MouvementStock,
     PointDeVente,
     Produit,
@@ -22,11 +26,15 @@ from core.serializers import (
     ClientSerializer,
     CommercialSerializer,
     EncaissementSerializer,
+    EntrepriseSerializer,
     MouvementStockSerializer,
     PointDeVenteSerializer,
     ProduitSerializer,
     TarifSerializer,
+    UserAdminSerializer,
 )
+
+User = get_user_model()
 
 
 def sante(request):
@@ -88,6 +96,105 @@ class ChangerMotDePasseView(APIView):
         user.set_password(nouveau)
         user.save(update_fields=["password"])
         return Response({"detail": "Mot de passe modifié."})
+
+
+class EntrepriseView(APIView):
+    """
+    Réglages globaux (onglets Général + Sécurité de Paramètres).
+    Lecture pour tout utilisateur connecté, écriture réservée au staff.
+    """
+
+    permission_classes = [IsAuthenticated, EstStaffPourEcriture]
+
+    def get(self, request):
+        return Response(EntrepriseSerializer(Entreprise.charger()).data)
+
+    def patch(self, request):
+        entreprise = Entreprise.charger()
+        serializer = EntrepriseSerializer(entreprise, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
+
+class UserAdminViewSet(viewsets.ModelViewSet):
+    """Gestion des comptes utilisateurs (onglet Utilisateurs), reservee au staff."""
+
+    queryset = User.objects.all().order_by("username")
+    serializer_class = UserAdminSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {"detail": "Impossible de supprimer : des enregistrements sont liés à cet utilisateur."},
+                status=400,
+            )
+
+
+_JEUX_EXPORT = {
+    "clients": (
+        ["Nom", "Téléphone", "Adresse", "Commercial", "Solde marchandise", "Solde financier", "Actif"],
+        lambda: (
+            [c.nom, c.telephone, c.adresse, str(c.commercial), c.solde_marchandise, c.solde_financier, c.actif]
+            for c in Client.objects.select_related("commercial")
+        ),
+    ),
+    "commerciaux": (
+        ["Nom", "Prénom", "Téléphone", "Point de vente", "Solde marchandise", "Solde financier", "Actif"],
+        lambda: (
+            [c.nom, c.prenom, c.telephone, str(c.point_de_vente), c.solde_marchandise, c.solde_financier, c.actif]
+            for c in Commercial.objects.select_related("point_de_vente")
+        ),
+    ),
+    "mouvements": (
+        ["Date", "Type", "Produit", "Quantité", "Montant", "Client", "Commercial", "Point de vente"],
+        lambda: (
+            [
+                m.date_mouvement,
+                m.get_type_display(),
+                m.produit.nom,
+                m.quantite,
+                m.montant,
+                str(m.client or ""),
+                str(m.commercial or ""),
+                str(m.point_de_vente or ""),
+            ]
+            for m in MouvementStock.objects.select_related("produit", "client", "commercial", "point_de_vente")
+        ),
+    ),
+    "encaissements": (
+        ["Date", "Client", "Montant", "Moyen de paiement", "Collecté par"],
+        lambda: (
+            [e.date_encaissement, str(e.client), e.montant, e.get_moyen_paiement_display(), str(e.collecte_par or "")]
+            for e in Encaissement.objects.select_related("client", "collecte_par")
+        ),
+    ),
+}
+
+
+class ExportCSVView(APIView):
+    """Export CSV des données (onglet Données), réservé au staff."""
+
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        jeu = request.query_params.get("jeu", "clients")
+        if jeu not in _JEUX_EXPORT:
+            return Response(
+                {"detail": f"Jeu de données inconnu. Valeurs possibles : {', '.join(_JEUX_EXPORT)}."},
+                status=400,
+            )
+
+        entetes, lignes = _JEUX_EXPORT[jeu]
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{jeu}.csv"'
+        writer = csv.writer(response)
+        writer.writerow(entetes)
+        writer.writerows(lignes())
+        return response
 
 
 class PointDeVenteViewSet(viewsets.ModelViewSet):
