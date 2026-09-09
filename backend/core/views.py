@@ -1,8 +1,12 @@
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import JsonResponse
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.models import (
     Client,
@@ -40,6 +44,50 @@ def _filtrer_par_client(qs, request):
     """Applique le paramètre ?client=<id>, utilisé par la fiche client."""
     client_id = request.query_params.get("client")
     return qs.filter(client_id=client_id) if client_id else qs
+
+
+def _infos_utilisateur(user):
+    return {
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "is_staff": user.is_staff,
+    }
+
+
+class MoiView(APIView):
+    """Infos du compte connecté (pour l'écran Profil)."""
+
+    def get(self, request):
+        return Response(_infos_utilisateur(request.user))
+
+    def patch(self, request):
+        email = request.data.get("email")
+        if email is not None:
+            request.user.email = email
+            request.user.save(update_fields=["email"])
+        return Response(_infos_utilisateur(request.user))
+
+
+class ChangerMotDePasseView(APIView):
+    """Permet à l'utilisateur connecté de changer son propre mot de passe."""
+
+    def post(self, request):
+        ancien = request.data.get("ancien_mot_de_passe", "")
+        nouveau = request.data.get("nouveau_mot_de_passe", "")
+        user = request.user
+
+        if not user.check_password(ancien):
+            return Response({"detail": "Mot de passe actuel incorrect."}, status=400)
+
+        try:
+            validate_password(nouveau, user=user)
+        except DjangoValidationError as exc:
+            return Response({"detail": list(exc.messages)}, status=400)
+
+        user.set_password(nouveau)
+        user.save(update_fields=["password"])
+        return Response({"detail": "Mot de passe modifié."})
 
 
 class PointDeVenteViewSet(viewsets.ModelViewSet):

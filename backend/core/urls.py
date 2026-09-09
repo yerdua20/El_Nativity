@@ -16,5 +16,11 @@ router.register("encaissements", views.EncaissementViewSet, basename="encaisseme
 urlpatterns = [
     path("sante/", views.sante, name="sante"),
     path("auth/token/", obtain_auth_token, name="obtenir-token"),
+    path("auth/moi/", views.MoiView.as_view(), name="moi"),
+    path(
+        "auth/changer-mot-de-passe/",
+        views.ChangerMotDePasseView.as_view(),
+        name="changer-mot-de-passe",
+    ),
     path("", include(router.urls)),
 ]
