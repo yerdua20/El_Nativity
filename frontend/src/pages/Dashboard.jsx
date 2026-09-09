@@ -27,12 +27,6 @@ const ACTIONS_RAPIDES = [
   { to: '/historique', titre: 'Historique', description: 'Mouvements et encaissements récents', icon: History },
 ]
 
-const FORMATTEUR_DATE = new Intl.DateTimeFormat('fr-FR', {
-  weekday: 'long',
-  day: 'numeric',
-  month: 'long',
-})
-
 function formaterMontant(valeur) {
   return Number(valeur).toLocaleString('fr-FR')
 }
@@ -170,20 +164,13 @@ export default function Dashboard() {
         <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/15" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-400/20" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
-        <div className="relative flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex h-20 w-12 shrink-0 items-center justify-center rounded-full bg-transparent">
-              <Home className="h-10 w-10" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-semibold">Tableau de bord</h1>
-              <p className="text-sm text-neutral-300">Vue d'ensemble de votre activité</p>
-            </div>
+        <div className="relative flex items-center gap-4">
+          <div className="flex h-20 w-12 shrink-0 items-center justify-center rounded-full bg-transparent">
+            <Home className="h-10 w-10" />
           </div>
-          <div className="flex shrink-0 items-center gap-3">
-            <span className="hidden text-sm text-neutral-300 capitalize sm:inline">
-              {FORMATTEUR_DATE.format(new Date())}
-            </span>
+          <div>
+            <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+            <p className="text-sm text-neutral-300">Vue d'ensemble de votre activité</p>
           </div>
         </div>
       </div>
