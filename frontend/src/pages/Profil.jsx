@@ -16,7 +16,6 @@ import {
   Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import apiClient from '../api/client'
 import {
   changerMotDePasse,
   creerUtilisateur,
@@ -623,17 +622,12 @@ function OngletDonnees() {
 // --- Page ------------------------------------------------------------------
 
 export default function Profil() {
-  const [sante, setSante] = useState('...')
   const [moi, setMoi] = useState(null)
   const [commercial, setCommercial] = useState(undefined)
   const [entreprise, setEntreprise] = useState(undefined)
   const [ongletActif, setOngletActif] = useState('compte')
 
   useEffect(() => {
-    apiClient
-      .get('/sante/')
-      .then(({ data }) => setSante(data.status))
-      .catch(() => setSante('indisponible'))
     lireMoi().then(setMoi)
     listerCommerciaux().then((liste) => setCommercial(liste[0] ?? null))
   }, [])
@@ -680,10 +674,6 @@ export default function Profil() {
             <h1 className="text-2xl font-semibold">Paramètres</h1>
             <p className="text-sm text-neutral-300">Gérez votre compte et vos accès</p>
           </div>
-          <span className="ml-auto flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs">
-            <span className={`h-1.5 w-1.5 rounded-full ${sante === 'ok' ? 'bg-or-300' : 'bg-red-400'}`} />
-            API {sante === 'ok' ? 'connectée' : sante}
-          </span>
         </div>
       </div>
 
