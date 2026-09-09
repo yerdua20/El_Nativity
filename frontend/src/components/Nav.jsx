@@ -34,7 +34,7 @@ const LIENS = [
 ]
 
 const lienClasse = ({ isActive }) =>
-  `relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition ${
+  `relative flex items-center gap-3 rounded-md px-4 py-2.5 text-base font-medium transition ${
     isActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
   }`
 
@@ -57,9 +57,9 @@ export default function Nav() {
 
         <button
           onClick={synchroniser}
-          className="relative mb-4 flex w-full items-center gap-2.5 rounded-2xl border border-green-300 bg-green-50 px-3 py-2 text-sm font-medium text-green-800 hover:bg-green-100"
+          className="relative mb-4 flex w-full items-center gap-3 rounded-2xl border border-green-300 bg-green-50 px-4 py-2.5 text-base font-medium text-green-800 hover:bg-green-100"
         >
-          <RefreshCw className="h-4 w-4 shrink-0" />
+          <RefreshCw className="h-5 w-5 shrink-0" />
           Synchroniser
           {total > 0 && (
             <span
@@ -75,7 +75,7 @@ export default function Nav() {
         <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap lg:gap-1">
           {LIENS.map((lien) => (
             <NavLink key={lien.to} to={lien.to} end={lien.end} className={lienClasse}>
-              <lien.icon className="h-4 w-4 shrink-0" />
+              <lien.icon className="h-5 w-5 shrink-0" />
               {lien.label}
             </NavLink>
           ))}
@@ -83,9 +83,9 @@ export default function Nav() {
       </div>
       <button
         onClick={logout}
-        className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-3 py-1.5 text-sm text-slate-700 hover:bg-or-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
+        className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-base text-slate-700 hover:bg-or-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
       >
-        <LogOut className="h-4 w-4" />
+        <LogOut className="h-5 w-5" />
         Déconnexion
       </button>
     </nav>
