@@ -29,10 +29,12 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-lg border border-slate-200 bg-white p-8 shadow-sm"
+        className="w-full max-w-lg rounded-lg border border-slate-200 text-lg text-slate-500 italic items-center bg-white p-10 shadow-sm"
       >
-        <img src={logoNativite} alt="La Nativité" className="mx-auto mb-6 w-32" />
-
+        <p className="mb-6">
+          Bienvenue dans l'espace de gestion des affaires de la Nativité. Veuillez vous connecter
+          pour accéder à votre tableau de bord.
+        </p>
         <label className="mb-1 block text-sm font-medium text-slate-700">
           Nom d'utilisateur
         </label>
@@ -59,7 +61,7 @@ export default function Login() {
         <button
           type="submit"
           disabled={enCours}
-          className="w-full rounded bg-slate-900 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+          className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-gold-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
         >
           {enCours ? 'Connexion...' : 'Se connecter'}
         </button>
