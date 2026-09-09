@@ -6,6 +6,7 @@ import {
   History,
   Package,
   PackagePlus,
+  RefreshCw,
   ShoppingCart,
   TrendingUp,
   Undo2,
@@ -126,13 +127,22 @@ export default function Dashboard() {
   const [commerciaux, setCommerciaux] = useState(null)
   const [mouvements, setMouvements] = useState(null)
   const [produits, setProduits] = useState([])
+  const [actualisation, setActualisation] = useState(false)
 
-  useEffect(() => {
+  function charger() {
     listerClients().then(setClients)
     listerCommerciaux().then(setCommerciaux)
     listerMouvements().then((data) => setMouvements(data.results))
     listerProduits().then(setProduits)
-  }, [])
+  }
+
+  useEffect(charger, [])
+
+  async function handleActualiser() {
+    setActualisation(true)
+    charger()
+    setTimeout(() => setActualisation(false), 500)
+  }
 
   const nomsProduits = Object.fromEntries(produits.map((p) => [p.id, p.nom]))
 
@@ -167,10 +177,22 @@ export default function Dashboard() {
         <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/15" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-400/20" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex items-center justify-between gap-4">
           <div>
-            <p className="text-sm text-neutral-300 capitalize">{FORMATTEUR_DATE.format(new Date())}</p>
-            <h1 className="text-2xl font-semibold">Gestion - Suivi - Contrôle</h1>
+            <h1 className="text-2xl font-semibold">Tableau de bord</h1>
+            <p className="text-sm text-neutral-300">Vue d'ensemble de votre activité</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="hidden text-sm text-neutral-300 capitalize sm:inline">
+              {FORMATTEUR_DATE.format(new Date())}
+            </span>
+            <button
+              onClick={handleActualiser}
+              title="Actualiser"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
+            >
+              <RefreshCw className={`h-4 w-4 ${actualisation ? 'animate-spin' : ''}`} />
+            </button>
           </div>
         </div>
       </div>
