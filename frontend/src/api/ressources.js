@@ -117,6 +117,21 @@ export async function supprimerUtilisateur(id) {
   await apiClient.delete(`/utilisateurs/${id}/`)
 }
 
+export async function listerReservations() {
+  const { data } = await apiClient.get('/reservations/')
+  return data.results
+}
+
+export async function creerReservation(payload) {
+  const { data } = await apiClient.post('/reservations/', payload)
+  return data
+}
+
+export async function modifierReservation(id, payload) {
+  const { data } = await apiClient.patch(`/reservations/${id}/`, payload)
+  return data
+}
+
 export async function exporterCSV(jeu) {
   const response = await apiClient.get('/export/', { params: { jeu }, responseType: 'blob' })
   const url = window.URL.createObjectURL(new Blob([response.data]))
