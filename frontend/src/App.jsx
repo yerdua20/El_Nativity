@@ -12,8 +12,10 @@ import Historique from './pages/Historique'
 import Login from './pages/Login'
 import NouveauDepot from './pages/NouveauDepot'
 import Profil from './pages/Profil'
+import ReceptionStock from './pages/ReceptionStock'
 import Reservations from './pages/Reservations'
 import Retours from './pages/Retours'
+import Stock from './pages/Stock'
 import VenteDeclaree from './pages/VenteDeclaree'
 import VenteDirecte from './pages/VenteDirecte'
 
@@ -32,6 +34,8 @@ export default function App() {
           <Route path="/clients/:id" element={protegee(<FicheClient />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
+          <Route path="/reception-stock" element={protegee(<ReceptionStock />)} />
+          <Route path="/stock" element={protegee(<Stock />)} />
           <Route path="/vente" element={protegee(<VenteDeclaree />)} />
           <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
           <Route path="/reservations" element={protegee(<Reservations />)} />

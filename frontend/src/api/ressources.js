@@ -63,6 +63,13 @@ export async function creerTarif(payload) {
   return data
 }
 
+export async function listerStockPointsDeVente(pointDeVenteId) {
+  const { data } = await apiClient.get('/stock-points-de-vente/', {
+    params: pointDeVenteId ? { point_de_vente: pointDeVenteId } : undefined,
+  })
+  return data.results
+}
+
 export async function listerMouvements(url = '/mouvements-stock/') {
   const { data } = await apiClient.get(url)
   return data
