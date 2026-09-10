@@ -1,9 +1,22 @@
 import csv
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import Case, DecimalField, F, ProtectedError, Q, Sum, Value, When
+from django.db.models import (
+    Case,
+    DecimalField,
+    F,
+    OuterRef,
+    ProtectedError,
+    Q,
+    Subquery,
+    Sum,
+    Value,
+    When,
+)
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse
 from django.utils.dateparse import parse_datetime
 from rest_framework import mixins, viewsets
@@ -308,6 +321,23 @@ class StockPointDeVenteViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         point_de_vente_id = self.request.query_params.get("point_de_vente")
         if point_de_vente_id:
             qs = qs.filter(point_de_vente_id=point_de_vente_id)
+
+        vendu = (
+            MouvementStock.objects.filter(
+                point_de_vente=OuterRef("point_de_vente"),
+                produit=OuterRef("produit"),
+                type=MouvementStock.TypeMouvement.VENTE_DIRECTE,
+            )
+            .values("point_de_vente", "produit")
+            .annotate(total=Sum("quantite"))
+            .values("total")
+        )
+        qs = qs.annotate(
+            quantite_vendue=Coalesce(
+                Subquery(vendu, output_field=DecimalField(max_digits=12, decimal_places=2)),
+                Value(Decimal("0")),
+            )
+        )
         return qs
 
 

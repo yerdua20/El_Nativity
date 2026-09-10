@@ -267,7 +267,9 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
 class StockPointDeVenteSerializer(serializers.ModelSerializer):
+    quantite_vendue = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
     class Meta:
         model = StockPointDeVente
-        fields = ["id", "point_de_vente", "produit", "quantite", "updated_at"]
+        fields = ["id", "point_de_vente", "produit", "quantite", "quantite_vendue", "updated_at"]
         read_only_fields = fields
