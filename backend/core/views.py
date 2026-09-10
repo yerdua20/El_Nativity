@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db.models import ProtectedError, Q
 from django.http import HttpResponse, JsonResponse
 from django.utils.dateparse import parse_datetime
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,6 +20,7 @@ from core.models import (
     PointDeVente,
     Produit,
     Reservation,
+    StockPointDeVente,
     Tarif,
 )
 from core.permissions import EstStaffPourEcriture, commercial_de
@@ -32,6 +33,7 @@ from core.serializers import (
     PointDeVenteSerializer,
     ProduitSerializer,
     ReservationSerializer,
+    StockPointDeVenteSerializer,
     TarifSerializer,
     UserAdminSerializer,
 )
@@ -263,6 +265,21 @@ class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.select_related("point_de_vente").all()
     serializer_class = ReservationSerializer
     permission_classes = [IsAuthenticated, EstStaffPourEcriture]
+
+
+class StockPointDeVenteViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Lecture seule : le stock n'est jamais modifié directement, seulement via les mouvements."""
+
+    queryset = StockPointDeVente.objects.select_related("point_de_vente", "produit").all()
+    serializer_class = StockPointDeVenteSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        point_de_vente_id = self.request.query_params.get("point_de_vente")
+        if point_de_vente_id:
+            qs = qs.filter(point_de_vente_id=point_de_vente_id)
+        return qs
 
 
 class EncaissementViewSet(viewsets.ModelViewSet):

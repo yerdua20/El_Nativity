@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.models import Client, Commercial, Encaissement, MouvementStock, Tarif
+from core.models import Client, Commercial, Encaissement, MouvementStock, StockPointDeVente, Tarif
 
 
 def _ajuster_solde_client(client, *, delta_marchandise=None, delta_financier=None):
@@ -35,6 +35,15 @@ def _ajuster_solde_commercial(commercial, *, delta_marchandise=None, delta_finan
         Commercial.objects.filter(pk=commercial.pk).update(**updates)
 
 
+def _ajuster_stock_point_de_vente(point_de_vente, produit, delta_quantite):
+    stock, _ = StockPointDeVente.objects.get_or_create(
+        point_de_vente=point_de_vente, produit=produit
+    )
+    StockPointDeVente.objects.filter(pk=stock.pk).update(
+        quantite=F("quantite") + delta_quantite
+    )
+
+
 # Effet de chaque type de mouvement sur les soldes marchandise du
 # client et du commercial concernés (en multiples du montant valorisé).
 _EFFETS_MARCHANDISE = {
@@ -51,6 +60,20 @@ _EFFETS_MARCHANDISE = {
 # client vers son solde financier (la vente est désormais reconnue).
 _EFFETS_FINANCIER = {
     MouvementStock.TypeMouvement.VENTE_DECLAREE: {"client": 1},
+}
+
+# Effet de chaque type de mouvement sur le stock du point de vente
+# concerné (en multiples de la quantité, pas de la valeur : un point
+# de vente porte des unités physiques, pas un solde en argent).
+_EFFETS_STOCK_POINT_DE_VENTE = {
+    MouvementStock.TypeMouvement.ENTREE_DEPOT: 1,
+    MouvementStock.TypeMouvement.AFFECTATION_COMMERCIAL: -1,
+    MouvementStock.TypeMouvement.RETOUR_DEPOT: 1,
+    MouvementStock.TypeMouvement.VENTE_DIRECTE: -1,
+    MouvementStock.TypeMouvement.PERTE: -1,
+    # DEPOT_CLIENT, VENTE_DECLAREE, RETOUR_CLIENT : la marchandise a
+    # déjà quitté le point de vente via une AFFECTATION_COMMERCIAL
+    # antérieure, pas d'effet ici.
 }
 
 
@@ -129,6 +152,11 @@ def enregistrer_mouvement_stock(
             _ajuster_solde_commercial(
                 commercial, delta_marchandise=montant * effets_marchandise["commercial"]
             )
+
+    if point_de_vente is not None:
+        multiplicateur_stock = _EFFETS_STOCK_POINT_DE_VENTE.get(type)
+        if multiplicateur_stock is not None:
+            _ajuster_stock_point_de_vente(point_de_vente, produit, quantite * multiplicateur_stock)
 
     return mouvement
 

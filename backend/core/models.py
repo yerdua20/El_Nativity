@@ -434,6 +434,11 @@ class Reservation(models.Model):
     )
     nom_client = models.CharField(max_length=150)
     telephone_client = models.CharField(max_length=30, blank=True)
+    type_evenement = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Ex : anniversaire, mariage, baptême... Libre, pas de liste fermée.",
+    )
     nombre_personnes = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     date_reservation = models.DateTimeField(
         help_text="Date et heure prévues de la réservation."
@@ -459,3 +464,33 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"{self.nom_client} ({self.nombre_personnes} pers.) - {self.point_de_vente} - {self.date_reservation:%d/%m/%Y %H:%M}"
+
+
+class StockPointDeVente(models.Model):
+    """
+    Quantité actuellement disponible d'un produit à un point de vente
+    (dépôt, bar ou restaurant) — dénormalisée pour un accès rapide,
+    mise à jour uniquement via core/services.py en même temps que le
+    MouvementStock qui la justifie (même principe que les soldes
+    client/commercial).
+    """
+
+    point_de_vente = models.ForeignKey(
+        PointDeVente, on_delete=models.PROTECT, related_name="stocks"
+    )
+    produit = models.ForeignKey(Produit, on_delete=models.PROTECT, related_name="stocks")
+    quantite = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0"))
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Stock point de vente"
+        verbose_name_plural = "Stocks points de vente"
+        ordering = ["point_de_vente__nom", "produit__nom"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["point_de_vente", "produit"], name="stock_unique_pdv_produit"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.produit} @ {self.point_de_vente} : {self.quantite}"

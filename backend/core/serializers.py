@@ -12,6 +12,7 @@ from core.models import (
     PointDeVente,
     Produit,
     Reservation,
+    StockPointDeVente,
     Tarif,
 )
 from core.permissions import commercial_de
@@ -246,6 +247,7 @@ class ReservationSerializer(serializers.ModelSerializer):
             "point_de_vente",
             "nom_client",
             "telephone_client",
+            "type_evenement",
             "nombre_personnes",
             "date_reservation",
             "statut",
@@ -262,3 +264,10 @@ class ReservationSerializer(serializers.ModelSerializer):
             return existante
         request = self.context["request"]
         return Reservation.objects.create(cree_par=request.user, **validated_data)
+
+
+class StockPointDeVenteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockPointDeVente
+        fields = ["id", "point_de_vente", "produit", "quantite", "updated_at"]
+        read_only_fields = fields
