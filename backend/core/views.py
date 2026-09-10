@@ -19,6 +19,7 @@ from core.models import (
     MouvementStock,
     PointDeVente,
     Produit,
+    Reservation,
     Tarif,
 )
 from core.permissions import EstStaffPourEcriture, commercial_de
@@ -30,6 +31,7 @@ from core.serializers import (
     MouvementStockSerializer,
     PointDeVenteSerializer,
     ProduitSerializer,
+    ReservationSerializer,
     TarifSerializer,
     UserAdminSerializer,
 )
@@ -255,6 +257,12 @@ class MouvementStockViewSet(viewsets.ModelViewSet):
         if depuis:
             qs = qs.filter(created_at__gt=depuis)
         return qs
+
+
+class ReservationViewSet(viewsets.ModelViewSet):
+    queryset = Reservation.objects.select_related("point_de_vente").all()
+    serializer_class = ReservationSerializer
+    permission_classes = [IsAuthenticated, EstStaffPourEcriture]
 
 
 class EncaissementViewSet(viewsets.ModelViewSet):

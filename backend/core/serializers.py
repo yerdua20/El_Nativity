@@ -11,6 +11,7 @@ from core.models import (
     MouvementStock,
     PointDeVente,
     Produit,
+    Reservation,
     Tarif,
 )
 from core.permissions import commercial_de
@@ -232,3 +233,32 @@ class EncaissementSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context["request"]
         return enregistrer_encaissement(cree_par=request.user, **validated_data)
+
+
+class ReservationSerializer(serializers.ModelSerializer):
+    uuid = serializers.UUIDField()
+
+    class Meta:
+        model = Reservation
+        fields = [
+            "id",
+            "uuid",
+            "point_de_vente",
+            "nom_client",
+            "telephone_client",
+            "nombre_personnes",
+            "date_reservation",
+            "statut",
+            "commentaire",
+            "cree_par",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["cree_par", "created_at", "updated_at"]
+
+    def create(self, validated_data):
+        existante = Reservation.objects.filter(uuid=validated_data["uuid"]).first()
+        if existante is not None:
+            return existante
+        request = self.context["request"]
+        return Reservation.objects.create(cree_par=request.user, **validated_data)

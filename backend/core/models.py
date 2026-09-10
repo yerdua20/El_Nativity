@@ -411,3 +411,51 @@ class Encaissement(models.Model):
 
     def __str__(self):
         return f"{self.montant} de {self.client} ({self.get_moyen_paiement_display()})"
+
+
+class Reservation(models.Model):
+    """
+    Réservation de table au bar ou au restaurant.
+
+    Pas de notion de table individuelle ni de vérification de
+    capacité : juste un nombre de personnes attendu à un créneau
+    donné pour un point de vente. Le client n'est pas rattaché au
+    modèle Client (dépôt-vente) : ses coordonnées sont en texte libre.
+    """
+
+    class Statut(models.TextChoices):
+        CONFIRMEE = "CONFIRMEE", "Confirmée"
+        ANNULEE = "ANNULEE", "Annulée"
+        HONOREE = "HONOREE", "Honorée"
+
+    uuid = models.UUIDField(unique=True, editable=False)
+    point_de_vente = models.ForeignKey(
+        PointDeVente, on_delete=models.PROTECT, related_name="reservations"
+    )
+    nom_client = models.CharField(max_length=150)
+    telephone_client = models.CharField(max_length=30, blank=True)
+    nombre_personnes = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    date_reservation = models.DateTimeField(
+        help_text="Date et heure prévues de la réservation."
+    )
+    statut = models.CharField(
+        max_length=20, choices=Statut.choices, default=Statut.CONFIRMEE
+    )
+    commentaire = models.TextField(blank=True)
+    cree_par = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="reservations_creees",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Réservation"
+        verbose_name_plural = "Réservations"
+        ordering = ["date_reservation"]
+
+    def __str__(self):
+        return f"{self.nom_client} ({self.nombre_personnes} pers.) - {self.point_de_vente} - {self.date_reservation:%d/%m/%Y %H:%M}"

@@ -12,6 +12,7 @@ router.register("commerciaux", views.CommercialViewSet, basename="commercial")
 router.register("clients", views.ClientViewSet, basename="client")
 router.register("mouvements-stock", views.MouvementStockViewSet, basename="mouvement-stock")
 router.register("encaissements", views.EncaissementViewSet, basename="encaissement")
+router.register("reservations", views.ReservationViewSet, basename="reservation")
 router.register("utilisateurs", views.UserAdminViewSet, basename="utilisateur")
 
 urlpatterns = [
