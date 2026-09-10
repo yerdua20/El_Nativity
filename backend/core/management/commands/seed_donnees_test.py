@@ -6,17 +6,33 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
-from core.models import Client, Commercial, Produit, PointDeVente, Tarif
+from core.models import (
+    Client,
+    Commercial,
+    Encaissement,
+    MouvementStock,
+    PointDeVente,
+    Produit,
+    Reservation,
+    StockPointDeVente,
+    Tarif,
+)
 from core.services import enregistrer_encaissement, enregistrer_mouvement_stock
+
+NOMS_POINTS_DE_VENTE = ["Dépôt Central Lomé", "Bar La Nativité - Agoè", "Restaurant La Nativité"]
+REFERENCES_PRODUITS = ["BIERE-AWO-CASIER", "SODA-COCA-33", "EAU-MIN-15L", "MENU-POULET", "MENU-POISSON"]
+USERNAMES_COMMERCIAUX = ["koffi.amegnran", "afiwa.dogbe"]
 
 
 class Command(BaseCommand):
     """
     Crée un jeu de données fictif (points de vente, produits, tarifs,
-    commerciaux, clients, mouvements, encaissements) pour tester
-    l'application de bout en bout sans toucher à de vraies données.
+    commerciaux, clients, mouvements, encaissements, stock de bar,
+    réservations) pour tester l'application de bout en bout sans
+    toucher à de vraies données.
 
     Refuse de tourner si DEBUG=False, pour ne jamais l'exécuter par
     erreur contre la base de production.
@@ -42,11 +58,13 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             depot = self._creer_point_de_vente("Dépôt Central Lomé", PointDeVente.TypePointDeVente.DEPOT)
-            self._creer_point_de_vente("Bar La Nativité - Agoè", PointDeVente.TypePointDeVente.BAR)
-            self._creer_point_de_vente("Restaurant La Nativité", PointDeVente.TypePointDeVente.RESTAURANT)
+            bar = self._creer_point_de_vente("Bar La Nativité - Agoè", PointDeVente.TypePointDeVente.BAR)
+            restaurant = self._creer_point_de_vente(
+                "Restaurant La Nativité", PointDeVente.TypePointDeVente.RESTAURANT
+            )
 
             produits = self._creer_produits()
-            self._creer_tarifs(produits, depot)
+            self._creer_tarifs(produits, [depot, bar, restaurant])
 
             commercial_koffi = self._creer_commercial(
                 depot, "Koffi", "Amégnran", "90 11 22 33", username="koffi.amegnran"
@@ -92,6 +110,37 @@ class Command(BaseCommand):
             self._encaisser(clients_koffi[0], Decimal("2500"), commercial_koffi, maintenant - timedelta(days=1))
             self._encaisser(clients_afiwa[0], Decimal("1500"), commercial_afiwa, maintenant)
 
+            # Réception de stock au bar et au restaurant.
+            self._recevoir(bar, produits["biere"], Decimal("50"), maintenant - timedelta(days=5))
+            self._recevoir(bar, produits["soda"], Decimal("40"), maintenant - timedelta(days=5))
+            self._recevoir(restaurant, produits["menu_poulet"], Decimal("20"), maintenant - timedelta(days=5))
+            self._recevoir(restaurant, produits["menu_poisson"], Decimal("20"), maintenant - timedelta(days=5))
+
+            # Ventes directes passées, pour tester le "vendu (total)" cumulé.
+            self._vendre_directement(bar, produits["biere"], Decimal("10"), maintenant - timedelta(days=3))
+            self._vendre_directement(bar, produits["soda"], Decimal("5"), maintenant - timedelta(days=2))
+
+            # Ventes directes du jour, pour tester le résumé "Ventes directes aujourd'hui".
+            self._vendre_directement(bar, produits["biere"], Decimal("3"), maintenant)
+            self._vendre_directement(restaurant, produits["menu_poulet"], Decimal("4"), maintenant)
+            self._vendre_directement(restaurant, produits["menu_poisson"], Decimal("2"), maintenant)
+
+            # Réservations de places de fête.
+            self._reserver(bar, "Kodjo Mensah", "90 99 88 77", "Anniversaire", 8, maintenant + timedelta(days=2))
+            self._reserver(restaurant, "Ama Sena", "91 22 11 00", "Mariage", 25, maintenant + timedelta(days=5))
+            self._reserver(
+                bar, "Client annulé", "90 00 00 00", "", 4, maintenant + timedelta(days=1), statut=Reservation.Statut.ANNULEE
+            )
+            self._reserver(
+                restaurant,
+                "Client déjà venu",
+                "91 33 22 11",
+                "Baptême",
+                12,
+                maintenant - timedelta(days=1),
+                statut=Reservation.Statut.HONOREE,
+            )
+
         self.stdout.write(self.style.SUCCESS("Données fictives créées."))
         self.stdout.write("Comptes commerciaux créés (mot de passe : test1234) :")
         self.stdout.write("  - koffi.amegnran")
@@ -108,6 +157,8 @@ class Command(BaseCommand):
             ("biere", "Bière Awooyo (casier)", "BIERE-AWO-CASIER", "casier", Decimal("6000")),
             ("soda", "Coca-Cola 33cl (casier)", "SODA-COCA-33", "casier", Decimal("4500")),
             ("eau", "Eau minérale 1.5L (carton)", "EAU-MIN-15L", "carton", Decimal("2500")),
+            ("menu_poulet", "Menu Poulet braisé", "MENU-POULET", "assiette", Decimal("3500")),
+            ("menu_poisson", "Menu Poisson grillé", "MENU-POISSON", "assiette", Decimal("4000")),
         ]
         produits = {}
         for cle, nom, reference, unite, _prix in specs:
@@ -118,14 +169,15 @@ class Command(BaseCommand):
         self._prix_par_produit = {cle: prix for cle, _, _, _, prix in specs}
         return produits
 
-    def _creer_tarifs(self, produits, depot):
+    def _creer_tarifs(self, produits, points_de_vente):
         for cle, produit in produits.items():
-            Tarif.objects.get_or_create(
-                produit=produit,
-                point_de_vente=depot,
-                date_effet=timezone.localdate() - timedelta(days=30),
-                defaults={"prix": self._prix_par_produit[cle]},
-            )
+            for pdv in points_de_vente:
+                Tarif.objects.get_or_create(
+                    produit=produit,
+                    point_de_vente=pdv,
+                    date_effet=timezone.localdate() - timedelta(days=30),
+                    defaults={"prix": self._prix_par_produit[cle]},
+                )
 
     def _creer_commercial(self, depot, prenom, nom, telephone, username):
         User = get_user_model()
@@ -215,23 +267,70 @@ class Command(BaseCommand):
             commentaire="Encaissement de test",
         )
 
+    def _recevoir(self, point_de_vente, produit, quantite, date):
+        enregistrer_mouvement_stock(
+            uuid=uuid.uuid4(),
+            type="ENTREE_DEPOT",
+            produit=produit,
+            quantite=quantite,
+            point_de_vente=point_de_vente,
+            date_mouvement=date,
+            commentaire="Réception de test",
+        )
+
+    def _vendre_directement(self, point_de_vente, produit, quantite, date):
+        enregistrer_mouvement_stock(
+            uuid=uuid.uuid4(),
+            type="VENTE_DIRECTE",
+            produit=produit,
+            quantite=quantite,
+            point_de_vente=point_de_vente,
+            date_mouvement=date,
+            commentaire="Vente directe de test",
+        )
+
+    def _reserver(self, point_de_vente, nom_client, telephone_client, type_evenement, nombre_personnes, date, statut=Reservation.Statut.CONFIRMEE):
+        Reservation.objects.get_or_create(
+            point_de_vente=point_de_vente,
+            nom_client=nom_client,
+            date_reservation=date,
+            defaults={
+                "uuid": uuid.uuid4(),
+                "telephone_client": telephone_client,
+                "type_evenement": type_evenement,
+                "nombre_personnes": nombre_personnes,
+                "statut": statut,
+            },
+        )
+
     # -- Reset --------------------------------------------------------------
 
     def _reset(self):
+        """
+        Supprime les données de test dans l'ordre inverse des
+        dépendances : tout ce qui protège (on_delete=PROTECT) un
+        commercial, un client, un produit ou un point de vente de
+        test doit disparaître avant eux.
+        """
         User = get_user_model()
-        usernames = ["koffi.amegnran", "afiwa.dogbe"]
-        Client.objects.filter(
-            commercial__utilisateur__username__in=usernames
+
+        Encaissement.objects.filter(
+            client__commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX
         ).delete()
-        Commercial.objects.filter(utilisateur__username__in=usernames).delete()
-        User.objects.filter(username__in=usernames).delete()
-        Tarif.objects.filter(
-            produit__reference__in=["BIERE-AWO-CASIER", "SODA-COCA-33", "EAU-MIN-15L"]
+        MouvementStock.objects.filter(
+            Q(commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX)
+            | Q(client__commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX)
+            | Q(point_de_vente__nom__in=NOMS_POINTS_DE_VENTE)
         ).delete()
-        Produit.objects.filter(
-            reference__in=["BIERE-AWO-CASIER", "SODA-COCA-33", "EAU-MIN-15L"]
-        ).delete()
-        PointDeVente.objects.filter(
-            nom__in=["Dépôt Central Lomé", "Bar La Nativité - Agoè", "Restaurant La Nativité"]
-        ).delete()
+        Reservation.objects.filter(point_de_vente__nom__in=NOMS_POINTS_DE_VENTE).delete()
+        StockPointDeVente.objects.filter(point_de_vente__nom__in=NOMS_POINTS_DE_VENTE).delete()
+
+        Client.objects.filter(commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX).delete()
+        Commercial.objects.filter(utilisateur__username__in=USERNAMES_COMMERCIAUX).delete()
+        User.objects.filter(username__in=USERNAMES_COMMERCIAUX).delete()
+
+        Tarif.objects.filter(produit__reference__in=REFERENCES_PRODUITS).delete()
+        Produit.objects.filter(reference__in=REFERENCES_PRODUITS).delete()
+        PointDeVente.objects.filter(nom__in=NOMS_POINTS_DE_VENTE).delete()
+
         self.stdout.write("Anciennes données de test supprimées.")
