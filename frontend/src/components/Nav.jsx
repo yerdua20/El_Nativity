@@ -56,8 +56,8 @@ export default function Nav() {
   const total = enAttente + echecs
 
   return (
-    <nav className="flex shrink-0 flex-col justify-between border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
-      <div>
+    <nav className="flex shrink-0 flex-col border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
+      <div className="shrink-0">
         <div className="mb-4 hidden items-center gap-3 px-2 lg:flex">
           <img src={logoNativite} alt="" className="h-16 w-16 rounded-full" />
           <div>
@@ -81,19 +81,20 @@ export default function Nav() {
             </span>
           )}
         </button>
-
-        <div className="flex flex-wrap gap-1 lg:flex-col lg:flex-nowrap lg:gap-1">
-          {LIENS.map((lien) => (
-            <NavLink key={lien.to} to={lien.to} end={lien.end} className={lienClasse}>
-              <lien.icon className="h-5 w-5 shrink-0" />
-              {lien.label}
-            </NavLink>
-          ))}
-        </div>
       </div>
+
+      <div className="flex flex-wrap gap-1 lg:min-h-0 lg:flex-1 lg:flex-col lg:flex-nowrap lg:gap-1 lg:overflow-y-auto">
+        {LIENS.map((lien) => (
+          <NavLink key={lien.to} to={lien.to} end={lien.end} className={lienClasse}>
+            <lien.icon className="h-5 w-5 shrink-0" />
+            {lien.label}
+          </NavLink>
+        ))}
+      </div>
+
       <button
         onClick={logout}
-        className="mt-4 flex items-center justify-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-base text-slate-700 hover:bg-or-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
+        className="mt-4 flex shrink-0 items-center justify-center gap-2 rounded-2xl border border-slate-300 px-4 py-2 text-base text-slate-700 hover:bg-or-50 focus:outline-none focus:ring-2 focus:ring-or-400 focus:ring-offset-2"
       >
         <LogOut className="h-5 w-5" />
         Déconnexion
