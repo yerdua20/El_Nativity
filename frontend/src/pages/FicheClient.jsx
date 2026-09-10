@@ -1,7 +1,7 @@
 import { User } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { lireClient, listerEncaissements, listerMouvements, listerProduits } from '../api/ressources'
+import { lireClient, lireStockClient, listerEncaissements, listerMouvements, listerProduits } from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
@@ -11,6 +11,7 @@ export default function FicheClient() {
   const [client, setClient] = useState(null)
   const [mouvements, setMouvements] = useState([])
   const [encaissements, setEncaissements] = useState([])
+  const [stockDetail, setStockDetail] = useState([])
   const produits = useRessource(listerProduits, 'cache_produits')
   const nomsProduits = Object.fromEntries(produits.map((p) => [p.id, p.nom]))
 
@@ -18,6 +19,7 @@ export default function FicheClient() {
     lireClient(id).then(setClient)
     listerMouvements(`/mouvements-stock/?client=${id}`).then((data) => setMouvements(data.results))
     listerEncaissements(`/encaissements/?client=${id}`).then((data) => setEncaissements(data.results))
+    lireStockClient(id).then(setStockDetail)
   }, [id])
 
   if (!client) {
@@ -49,6 +51,23 @@ export default function FicheClient() {
           <p className="text-sm text-slate-500">Solde financier</p>
           <p className="mt-1 text-2xl font-semibold text-slate-900">{client.solde_financier}</p>
         </div>
+      </div>
+
+      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
+        <h2 className="mb-3 text-sm font-semibold text-slate-700">Marchandise détenue par produit</h2>
+        {stockDetail.length === 0 && (
+          <p className="text-sm text-slate-500">Aucune marchandise en cours chez ce client.</p>
+        )}
+        {stockDetail.length > 0 && (
+          <ul className="divide-y divide-slate-100 text-sm">
+            {stockDetail.map((ligne) => (
+              <li key={ligne.produit} className="flex justify-between py-2">
+                <span>{ligne.produit_nom}</span>
+                <span className="font-medium text-slate-900">{ligne.quantite_restante}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">

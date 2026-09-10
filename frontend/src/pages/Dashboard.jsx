@@ -8,6 +8,7 @@ import {
   Package,
   PackagePlus,
   ShoppingCart,
+  Store,
   TrendingUp,
   Undo2,
   Users,
@@ -15,7 +16,13 @@ import {
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { listerClients, listerCommerciaux, listerMouvements, listerProduits } from '../api/ressources'
+import {
+  listerClients,
+  listerCommerciaux,
+  listerMouvements,
+  listerPointsDeVente,
+  listerProduits,
+} from '../api/ressources'
 import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
@@ -121,17 +128,37 @@ export default function Dashboard() {
   const [commerciaux, setCommerciaux] = useState(null)
   const [mouvements, setMouvements] = useState(null)
   const [produits, setProduits] = useState([])
+  const [pointsDeVente, setPointsDeVente] = useState([])
+  const [ventesJour, setVentesJour] = useState(null)
 
   function charger() {
     listerClients().then(setClients)
     listerCommerciaux().then(setCommerciaux)
     listerMouvements().then((data) => setMouvements(data.results))
     listerProduits().then(setProduits)
+    listerPointsDeVente().then(setPointsDeVente)
+    const debutJour = new Date(new Date().setHours(0, 0, 0, 0)).toISOString()
+    listerMouvements(`/mouvements-stock/?depuis=${encodeURIComponent(debutJour)}`).then((data) =>
+      setVentesJour(data.results),
+    )
   }
 
   useEffect(charger, [])
 
   const nomsProduits = Object.fromEntries(produits.map((p) => [p.id, p.nom]))
+  const nomsPdv = Object.fromEntries(pointsDeVente.map((p) => [p.id, p.nom]))
+
+  const resumeVentesDirectesJour = Object.values(
+    (ventesJour ?? [])
+      .filter((m) => m.type === 'VENTE_DIRECTE')
+      .reduce((acc, m) => {
+        const cle = m.point_de_vente
+        if (!acc[cle]) acc[cle] = { pointDeVente: cle, nombre: 0, montant: 0 }
+        acc[cle].nombre += 1
+        acc[cle].montant += Number(m.montant ?? 0)
+        return acc
+      }, {}),
+  )
 
   const soldeMarchandiseTotal = clients?.reduce((total, c) => total + Number(c.solde_marchandise), 0)
   const creancesTotal = clients?.reduce((total, c) => total + Number(c.solde_financier), 0)
@@ -200,6 +227,29 @@ export default function Dashboard() {
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <GraphiqueBarres titre="Marchandise par commercial" donnees={topCommerciaux} hex="#ce9a2e" tonalite="or" />
         <GraphiqueBarres titre="Plus grosses créances clients" donnees={topCreances} hex="#52525b" tonalite="neutre" />
+      </div>
+
+      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
+        <h2 className="mb-3 flex items-center gap-2.5 text-sm font-semibold text-slate-700">
+          <Badge icon={Store} tonalite="or" />
+          Ventes directes aujourd'hui (bars, restaurant)
+        </h2>
+        {!ventesJour && <p className="text-sm text-slate-400">Chargement...</p>}
+        {ventesJour && resumeVentesDirectesJour.length === 0 && (
+          <p className="text-sm text-slate-400">Aucune vente directe enregistrée aujourd'hui.</p>
+        )}
+        {resumeVentesDirectesJour.length > 0 && (
+          <ul className="divide-y divide-slate-100 text-sm">
+            {resumeVentesDirectesJour.map((ligne) => (
+              <li key={ligne.pointDeVente} className="flex items-center justify-between py-2.5">
+                <span className="text-slate-800">{nomsPdv[ligne.pointDeVente] ?? ligne.pointDeVente}</span>
+                <span className="text-slate-500">
+                  {ligne.nombre} vente{ligne.nombre > 1 ? 's' : ''} · {formaterMontant(ligne.montant)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
