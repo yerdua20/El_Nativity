@@ -37,6 +37,7 @@ export default function Reservations() {
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [nomClient, setNomClient] = useState('')
   const [telephoneClient, setTelephoneClient] = useState('')
+  const [typeEvenement, setTypeEvenement] = useState('')
   const [nombrePersonnes, setNombrePersonnes] = useState('')
   const [dateReservation, setDateReservation] = useState(dansUneHeure())
   const [erreur, setErreur] = useState('')
@@ -58,11 +59,13 @@ export default function Reservations() {
         point_de_vente: Number(pointDeVenteId),
         nom_client: nomClient,
         telephone_client: telephoneClient,
+        type_evenement: typeEvenement,
         nombre_personnes: Number(nombrePersonnes),
         date_reservation: new Date(dateReservation).toISOString(),
       })
       setNomClient('')
       setTelephoneClient('')
+      setTypeEvenement('')
       setNombrePersonnes('')
       setDateReservation(dansUneHeure())
       setFormulaireOuvert(false)
@@ -129,6 +132,12 @@ export default function Reservations() {
               onChange={(event) => setTelephoneClient(event.target.value)}
             />
             <input
+              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              placeholder="Type d'événement (anniversaire, mariage...)"
+              value={typeEvenement}
+              onChange={(event) => setTypeEvenement(event.target.value)}
+            />
+            <input
               type="number"
               min="1"
               step="1"
@@ -166,6 +175,7 @@ export default function Reservations() {
                 <th className="px-4 py-3 font-medium">Date</th>
                 <th className="px-4 py-3 font-medium">Point de vente</th>
                 <th className="px-4 py-3 font-medium">Client</th>
+                <th className="px-4 py-3 font-medium">Événement</th>
                 <th className="px-4 py-3 font-medium">Personnes</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium"></th>
@@ -184,6 +194,7 @@ export default function Reservations() {
                       <span className="text-slate-500"> · {reservation.telephone_client}</span>
                     )}
                   </td>
+                  <td className="px-4 py-3 text-slate-500">{reservation.type_evenement || '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{reservation.nombre_personnes}</td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-1 text-xs font-medium ${CLASSES_STATUT[reservation.statut]}`}>
