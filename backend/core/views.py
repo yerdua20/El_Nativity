@@ -3,10 +3,11 @@ import csv
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.db.models import ProtectedError, Q
+from django.db.models import Case, DecimalField, F, ProtectedError, Q, Sum, Value, When
 from django.http import HttpResponse, JsonResponse
 from django.utils.dateparse import parse_datetime
 from rest_framework import mixins, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -241,6 +242,34 @@ class ClientViewSet(viewsets.ModelViewSet):
             return qs
         proprietaire = commercial_de(self.request)
         return qs.filter(commercial=proprietaire) if proprietaire else qs.none()
+
+    @action(detail=True, methods=["get"])
+    def stock(self, request, pk=None):
+        """
+        Détail par produit de la marchandise encore détenue par ce
+        client (solde_marchandise n'est qu'une valeur globale en
+        FCFA) : déposé - vendu déclaré - retourné, par produit.
+        """
+        client = self.get_object()
+        effets = {
+            MouvementStock.TypeMouvement.DEPOT_CLIENT: 1,
+            MouvementStock.TypeMouvement.VENTE_DECLAREE: -1,
+            MouvementStock.TypeMouvement.RETOUR_CLIENT: -1,
+        }
+        lignes = (
+            MouvementStock.objects.filter(client=client, type__in=effets)
+            .annotate(
+                effet=Case(
+                    *[When(type=type_, then=Value(mult)) for type_, mult in effets.items()],
+                    output_field=DecimalField(max_digits=12, decimal_places=2),
+                )
+            )
+            .values("produit", produit_nom=F("produit__nom"))
+            .annotate(quantite_restante=Sum(F("quantite") * F("effet")))
+            .filter(quantite_restante__gt=0)
+            .order_by("produit__nom")
+        )
+        return Response(list(lignes))
 
 
 class MouvementStockViewSet(viewsets.ModelViewSet):
