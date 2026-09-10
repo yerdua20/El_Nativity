@@ -152,13 +152,15 @@ export default function Dashboard() {
     (ventesJour ?? [])
       .filter((m) => m.type === 'VENTE_DIRECTE')
       .reduce((acc, m) => {
-        const cle = m.point_de_vente
-        if (!acc[cle]) acc[cle] = { pointDeVente: cle, nombre: 0, montant: 0 }
-        acc[cle].nombre += 1
+        const cle = `${m.point_de_vente}-${m.produit}`
+        if (!acc[cle]) {
+          acc[cle] = { pointDeVente: m.point_de_vente, produit: m.produit, quantite: 0, montant: 0 }
+        }
+        acc[cle].quantite += Number(m.quantite)
         acc[cle].montant += Number(m.montant ?? 0)
         return acc
       }, {}),
-  )
+  ).sort((a, b) => (nomsPdv[a.pointDeVente] ?? '').localeCompare(nomsPdv[b.pointDeVente] ?? ''))
 
   const soldeMarchandiseTotal = clients?.reduce((total, c) => total + Number(c.solde_marchandise), 0)
   const creancesTotal = clients?.reduce((total, c) => total + Number(c.solde_financier), 0)
@@ -241,10 +243,13 @@ export default function Dashboard() {
         {resumeVentesDirectesJour.length > 0 && (
           <ul className="divide-y divide-slate-100 text-sm">
             {resumeVentesDirectesJour.map((ligne) => (
-              <li key={ligne.pointDeVente} className="flex items-center justify-between py-2.5">
-                <span className="text-slate-800">{nomsPdv[ligne.pointDeVente] ?? ligne.pointDeVente}</span>
+              <li key={`${ligne.pointDeVente}-${ligne.produit}`} className="flex items-center justify-between py-2.5">
+                <span className="text-slate-800">
+                  {nomsPdv[ligne.pointDeVente] ?? ligne.pointDeVente} —{' '}
+                  {nomsProduits[ligne.produit] ?? ligne.produit}
+                </span>
                 <span className="text-slate-500">
-                  {ligne.nombre} vente{ligne.nombre > 1 ? 's' : ''} · {formaterMontant(ligne.montant)}
+                  {ligne.quantite} vendu{ligne.quantite > 1 ? 's' : ''} · {formaterMontant(ligne.montant)}
                 </span>
               </li>
             ))}

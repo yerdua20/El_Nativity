@@ -51,6 +51,7 @@ export default function Stock() {
                 <th className="px-4 py-3 font-medium">Point de vente</th>
                 <th className="px-4 py-3 font-medium">Produit</th>
                 <th className="px-4 py-3 font-medium">Quantité en stock</th>
+                <th className="px-4 py-3 font-medium">Vendu (total)</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -59,6 +60,7 @@ export default function Stock() {
                   <td className="px-4 py-3">{nomsPdv[ligne.point_de_vente] ?? ligne.point_de_vente}</td>
                   <td className="px-4 py-3">{nomsProduits[ligne.produit] ?? ligne.produit}</td>
                   <td className="px-4 py-3 font-medium text-slate-900">{ligne.quantite}</td>
+                  <td className="px-4 py-3 text-slate-500">{ligne.quantite_vendue}</td>
                 </tr>
               ))}
             </tbody>
