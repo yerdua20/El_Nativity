@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import RouteProtegee from './auth/RouteProtegee'
 import AffectationCommercial from './pages/AffectationCommercial'
+import Carte from './pages/Carte'
 import Catalogue from './pages/Catalogue'
 import Clients from './pages/Clients'
 import Commerciaux from './pages/Commerciaux'
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/" element={protegee(<Dashboard />)} />
           <Route path="/clients" element={protegee(<Clients />)} />
           <Route path="/clients/:id" element={protegee(<FicheClient />)} />
+          <Route path="/carte" element={protegee(<Carte />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
           <Route path="/reception-stock" element={protegee(<ReceptionStock />)} />

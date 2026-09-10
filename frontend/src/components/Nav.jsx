@@ -8,6 +8,7 @@ import {
   History,
   Home,
   LogOut,
+  MapPin,
   PackageCheck,
   PackagePlus,
   RefreshCw,
@@ -26,6 +27,7 @@ import { useFileAttente } from '../offline/useFileAttente'
 const LIENS = [
   { to: '/', label: 'Tableau de bord', end: true, icon: Home },
   { to: '/clients', label: 'Clients', icon: Users },
+  { to: '/carte', label: 'Carte', icon: MapPin },
   { to: '/commerciaux', label: 'Commerciaux', icon: Briefcase },
   { to: '/depot', label: 'Nouveau dépôt', icon: PackagePlus },
   { to: '/reception-stock', label: 'Réception de stock', icon: PackageCheck },
