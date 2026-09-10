@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Settings,
   ShoppingCart,
+  Store,
   Undo2,
   Users,
 } from 'lucide-react'
@@ -25,6 +26,7 @@ const LIENS = [
   { to: '/commerciaux', label: 'Commerciaux', icon: Briefcase },
   { to: '/depot', label: 'Nouveau dépôt', icon: PackagePlus },
   { to: '/vente', label: 'Vente déclarée', icon: ShoppingCart },
+  { to: '/vente-directe', label: 'Vente directe', icon: Store },
   { to: '/retours', label: 'Retours', icon: Undo2 },
   { to: '/affectation', label: 'Affectation', icon: ArrowLeftRight },
   { to: '/encaissement', label: 'Encaissement', icon: CreditCard },

@@ -14,6 +14,7 @@ import NouveauDepot from './pages/NouveauDepot'
 import Profil from './pages/Profil'
 import Retours from './pages/Retours'
 import VenteDeclaree from './pages/VenteDeclaree'
+import VenteDirecte from './pages/VenteDirecte'
 
 function protegee(element) {
   return <RouteProtegee>{element}</RouteProtegee>
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
           <Route path="/vente" element={protegee(<VenteDeclaree />)} />
+          <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
           <Route path="/retours" element={protegee(<Retours />)} />
           <Route path="/affectation" element={protegee(<AffectationCommercial />)} />
           <Route path="/encaissement" element={protegee(<Encaissement />)} />
