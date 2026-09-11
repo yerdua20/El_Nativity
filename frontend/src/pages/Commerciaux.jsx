@@ -17,6 +17,15 @@ function Avatar({ nom, prenom }) {
   )
 }
 
+const ROLES = [
+  { value: 'PDG', label: 'PDG' },
+  { value: 'GERANT', label: 'Gérant' },
+  { value: 'CHARGE_VENTES', label: 'Chargé(e) des ventes' },
+  { value: 'COMPTABLE', label: 'Comptable' },
+  { value: 'AUTRE', label: 'Autre' },
+]
+const LABELS_ROLE = Object.fromEntries(ROLES.map((r) => [r.value, r.label]))
+
 export default function Commerciaux() {
   const [commerciaux, setCommerciaux] = useState([])
   const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
@@ -25,6 +34,7 @@ export default function Commerciaux() {
   const [nom, setNom] = useState('')
   const [prenom, setPrenom] = useState('')
   const [telephone, setTelephone] = useState('')
+  const [role, setRole] = useState('AUTRE')
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [dateEntree, setDateEntree] = useState(todayISO())
   const [erreur, setErreur] = useState('')
@@ -47,16 +57,18 @@ export default function Commerciaux() {
         nom,
         prenom,
         telephone,
+        role,
         point_de_vente: Number(pointDeVenteId),
         date_entree: dateEntree,
       })
       setNom('')
       setPrenom('')
       setTelephone('')
+      setRole('AUTRE')
       setFormulaireOuvert(false)
       rafraichir()
     } catch {
-      setErreur('Impossible de créer ce commercial.')
+      setErreur('Impossible de créer ce personnel.')
     } finally {
       setEnCours(false)
     }
@@ -82,7 +94,7 @@ export default function Commerciaux() {
           className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
         >
           <Plus className="h-4 w-4" />
-          Nouveau commercial
+          Nouveau personnel
         </button>
       </div>
 
@@ -109,6 +121,18 @@ export default function Commerciaux() {
               value={telephone}
               onChange={(event) => setTelephone(event.target.value)}
             />
+            <select
+              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              value={role}
+              onChange={(event) => setRole(event.target.value)}
+              required
+            >
+              {ROLES.map((r) => (
+                <option key={r.value} value={r.value}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
             <select
               className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={pointDeVenteId}
@@ -144,12 +168,13 @@ export default function Commerciaux() {
       )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        {commerciaux.length === 0 && <p className="p-4 text-sm text-slate-500">Aucun commercial pour l'instant.</p>}
+        {commerciaux.length === 0 && <p className="p-4 text-sm text-slate-500">Aucun personnel pour l'instant.</p>}
         {commerciaux.length > 0 && (
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500">
                 <th className="px-4 py-3 font-medium">Nom</th>
+                <th className="px-4 py-3 font-medium">Rôle</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
                 <th className="px-4 py-3 font-medium">Dépôt</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
@@ -165,6 +190,7 @@ export default function Commerciaux() {
                       {commercial.prenom} {commercial.nom}
                     </div>
                   </td>
+                  <td className="px-4 py-3 text-slate-500">{LABELS_ROLE[commercial.role] ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{commercial.telephone || '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{nomsPdv[commercial.point_de_vente] ?? '—'}</td>
                   <td className="px-4 py-3">
