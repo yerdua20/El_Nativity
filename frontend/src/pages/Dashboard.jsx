@@ -1,7 +1,6 @@
 import {
   Briefcase,
   Clock,
-  CreditCard,
   FileText,
   History,
   Home,
@@ -24,7 +23,6 @@ import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
   { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Soldes, dépôts, ventes déclarées et retours par marchand', icon: Store },
-  { to: '/encaissement', titre: 'Encaissement', description: "Enregistrer un paiement d'un marchand", icon: CreditCard },
   { to: '/clients', titre: 'Clients', description: 'Clients qui commandent et paient comptant', icon: Users },
   { to: '/historique', titre: 'Historique', description: 'Mouvements et encaissements récents', icon: History },
 ]

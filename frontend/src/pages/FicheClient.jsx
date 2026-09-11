@@ -14,6 +14,13 @@ import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
 
+const MOYENS_PAIEMENT = [
+  { valeur: 'ESPECES', libelle: 'Espèces' },
+  { valeur: 'MOBILE_MONEY', libelle: 'Mobile money' },
+  { valeur: 'VIREMENT', libelle: 'Virement' },
+  { valeur: 'AUTRE', libelle: 'Autre' },
+]
+
 export default function FicheClient() {
   const { id } = useParams()
   const [client, setClient] = useState(null)
@@ -38,8 +45,15 @@ export default function FicheClient() {
   const [produitVenteId, setProduitVenteId] = useState('')
   const [commercialVenteId, setCommercialVenteId] = useState('')
   const [quantiteVente, setQuantiteVente] = useState('')
+  const [moyenPaiementVente, setMoyenPaiementVente] = useState('ESPECES')
+  const [montantRecuVente, setMontantRecuVente] = useState('')
+  const [monnaieRendueOui, setMonnaieRendueOui] = useState(false)
+  const [montantMonnaieVente, setMontantMonnaieVente] = useState('')
   const [succesVente, setSuccesVente] = useState('')
   const [enCoursVente, setEnCoursVente] = useState(false)
+
+  const montantMonnaieEffectif = monnaieRendueOui ? Number(montantMonnaieVente || 0) : 0
+  const montantNetVente = Number(montantRecuVente || 0) - montantMonnaieEffectif
 
   const [formulaireRetourOuvert, setFormulaireRetourOuvert] = useState(false)
   const [produitRetourId, setProduitRetourId] = useState('')
@@ -105,6 +119,7 @@ export default function FicheClient() {
     event.preventDefault()
     setSuccesVente('')
     setEnCoursVente(true)
+    const maintenant = new Date().toISOString()
     await mettreEnFile({
       endpoint: '/mouvements-stock/',
       payload: {
@@ -114,11 +129,27 @@ export default function FicheClient() {
         quantite: quantiteVente,
         client: id,
         commercial: commercialVenteId,
-        date_mouvement: new Date().toISOString(),
+        date_mouvement: maintenant,
       },
     })
-    setSuccesVente('Vente déclarée enregistrée (synchronisation en cours ou en attente de réseau).')
+    await mettreEnFile({
+      endpoint: '/encaissements/',
+      payload: {
+        uuid: crypto.randomUUID(),
+        client: id,
+        montant: montantNetVente,
+        montant_recu: montantRecuVente,
+        monnaie_rendue: montantMonnaieEffectif,
+        moyen_paiement: moyenPaiementVente,
+        collecte_par: commercialVenteId,
+        date_encaissement: maintenant,
+      },
+    })
+    setSuccesVente('Vente déclarée et paiement encaissé (synchronisation en cours ou en attente de réseau).')
     setQuantiteVente('')
+    setMontantRecuVente('')
+    setMonnaieRendueOui(false)
+    setMontantMonnaieVente('')
     setEnCoursVente(false)
     rafraichir()
   }
@@ -301,7 +332,7 @@ export default function FicheClient() {
           )}
 
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">Déclarer une vente</h2>
+            <h2 className="text-sm font-semibold text-slate-700">Déclarer une vente et encaisser</h2>
             <button
               onClick={() => setFormulaireVenteOuvert((v) => !v)}
               className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
@@ -314,8 +345,8 @@ export default function FicheClient() {
           {formulaireVenteOuvert && (
             <form onSubmit={handleSubmitVente} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-3 text-sm text-slate-500">
-                Le solde marchandise diminue d'autant, le solde financier augmente (vente désormais
-                reconnue).
+                Le paiement est saisi en même temps que la vente : le solde marchandise diminue, le
+                solde financier augmente puis baisse aussitôt du montant net encaissé.
               </p>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <select
@@ -360,13 +391,64 @@ export default function FicheClient() {
                 />
               </div>
 
+              <h3 className="mt-4 mb-2 text-sm font-medium text-slate-700">Paiement</h3>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <select
+                  className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                  value={moyenPaiementVente}
+                  onChange={(event) => setMoyenPaiementVente(event.target.value)}
+                  required
+                >
+                  {MOYENS_PAIEMENT.map((moyen) => (
+                    <option key={moyen.valeur} value={moyen.valeur}>
+                      {moyen.libelle}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="Montant reçu"
+                  className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                  value={montantRecuVente}
+                  onChange={(event) => setMontantRecuVente(event.target.value)}
+                  required
+                />
+                <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={monnaieRendueOui}
+                    onChange={(event) => setMonnaieRendueOui(event.target.checked)}
+                  />
+                  Monnaie rendue ?
+                </label>
+              </div>
+
+              {monnaieRendueOui && (
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="Montant de la monnaie rendue"
+                  className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none sm:w-1/3"
+                  value={montantMonnaieVente}
+                  onChange={(event) => setMontantMonnaieVente(event.target.value)}
+                  required
+                />
+              )}
+
+              <p className="mt-3 text-sm text-slate-600">
+                Montant net encaissé : <span className="font-semibold text-slate-900">{montantNetVente}</span>
+              </p>
+
               {succesVente && <p className="mt-3 text-sm text-green-600">{succesVente}</p>}
               <button
                 type="submit"
                 disabled={enCoursVente}
                 className="mt-3 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
               >
-                {enCoursVente ? 'Enregistrement...' : 'Déclarer la vente'}
+                {enCoursVente ? 'Enregistrement...' : 'Déclarer la vente et encaisser'}
               </button>
             </form>
           )}
