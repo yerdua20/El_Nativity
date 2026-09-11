@@ -99,17 +99,10 @@ class CommercialSerializer(serializers.ModelSerializer):
             "date_entree",
             "date_sortie",
             "actif",
-            "solde_marchandise",
-            "solde_financier",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = [
-            "solde_marchandise",
-            "solde_financier",
-            "created_at",
-            "updated_at",
-        ]
+        read_only_fields = ["created_at", "updated_at"]
 
 
 class ClientSerializer(serializers.ModelSerializer):

@@ -25,15 +25,15 @@ from core.services import enregistrer_encaissement, enregistrer_mouvement_stock
 NOMS_POINTS_DE_VENTE = ["Dépôt Central Lomé", "Bar La Nativité - Agoè", "Restaurant La Nativité"]
 REFERENCES_PRODUITS = ["BIERE-AWO-CASIER", "SODA-COCA-33", "EAU-MIN-15L", "MENU-POULET", "MENU-POISSON"]
 USERNAMES_COMMERCIAUX = ["koffi.amegnran", "afiwa.dogbe"]
-NOMS_MARCHANDS_CASH = ["Boutique Bella"]
+NOMS_CLIENTS_CASH = ["Boutique Bella"]
 
 
 class Command(BaseCommand):
     """
     Crée un jeu de données fictif (points de vente, produits, tarifs,
-    commerciaux, clients, mouvements, encaissements, stock de bar,
-    réservations) pour tester l'application de bout en bout sans
-    toucher à de vraies données.
+    personnel, marchands en dépôt-vente, clients cash, mouvements,
+    encaissements, stock de bar, réservations) pour tester
+    l'application de bout en bout sans toucher à de vraies données.
 
     Refuse de tourner si DEBUG=False, pour ne jamais l'exécuter par
     erreur contre la base de production.
@@ -67,49 +67,50 @@ class Command(BaseCommand):
             produits = self._creer_produits()
             self._creer_tarifs(produits, [depot, bar, restaurant])
 
-            commercial_koffi = self._creer_commercial(
-                depot, "Koffi", "Amégnran", "90 11 22 33", username="koffi.amegnran"
-            )
-            commercial_afiwa = self._creer_commercial(
-                depot, "Afiwa", "Dogbe", "91 44 55 66", username="afiwa.dogbe"
-            )
+            # Personnel de La Nativité : gérant et chargée des ventes,
+            # qui n'ont pas de portefeuille propre, juste un tag
+            # d'audit sur les dépôts qu'ils enregistrent.
+            gerant = self._creer_commercial(depot, "Koffi", "Amégnran", "90 11 22 33", username="koffi.amegnran")
+            chargee_ventes = self._creer_commercial(depot, "Afiwa", "Dogbe", "91 44 55 66", username="afiwa.dogbe")
 
-            clients_koffi = [
-                self._creer_client(commercial_koffi, "Boutique Bon Prix", "90 12 34 56", "Adidogomé, Lomé"),
-                self._creer_client(commercial_koffi, "Alimentation Grâce", "90 65 43 21", "Agbalépédogan, Lomé"),
-                self._creer_client(commercial_koffi, "Kiosque Espoir", "90 77 88 99", "Bè, Lomé"),
+            marchands_gerant = [
+                self._creer_marchand(gerant, "Boutique Bon Prix", "90 12 34 56", "Adidogomé, Lomé"),
+                self._creer_marchand(gerant, "Alimentation Grâce", "90 65 43 21", "Agbalépédogan, Lomé"),
+                self._creer_marchand(gerant, "Kiosque Espoir", "90 77 88 99", "Bè, Lomé"),
             ]
-            clients_afiwa = [
-                self._creer_client(commercial_afiwa, "Supérette Aïda", "91 22 33 44", "Tokoin, Lomé"),
-                self._creer_client(commercial_afiwa, "Dépôt Faveur", "91 55 66 77", "Hédzranawoé, Lomé"),
+            marchands_chargee = [
+                self._creer_marchand(chargee_ventes, "Supérette Aïda", "91 22 33 44", "Tokoin, Lomé"),
+                self._creer_marchand(chargee_ventes, "Dépôt Faveur", "91 55 66 77", "Hédzranawoé, Lomé"),
             ]
 
             maintenant = timezone.now()
 
-            # Affectation initiale de marchandise aux commerciaux.
-            self._affecter(commercial_koffi, produits["biere"], Decimal("20"), maintenant - timedelta(days=10))
-            self._affecter(commercial_koffi, produits["soda"], Decimal("15"), maintenant - timedelta(days=10))
-            self._affecter(commercial_afiwa, produits["eau"], Decimal("30"), maintenant - timedelta(days=8))
-            self._affecter(commercial_afiwa, produits["biere"], Decimal("10"), maintenant - timedelta(days=8))
+            # Réception de stock au dépôt central (un seul lot commun,
+            # transporté par le tricycle, avant d'être réparti chez les marchands).
+            self._recevoir(depot, produits["biere"], Decimal("60"), maintenant - timedelta(days=11))
+            self._recevoir(depot, produits["soda"], Decimal("40"), maintenant - timedelta(days=11))
+            self._recevoir(depot, produits["eau"], Decimal("50"), maintenant - timedelta(days=11))
 
-            # Dépôts chez les clients.
-            self._deposer(commercial_koffi, clients_koffi[0], produits["biere"], Decimal("8"), maintenant - timedelta(days=9))
-            self._deposer(commercial_koffi, clients_koffi[1], produits["soda"], Decimal("6"), maintenant - timedelta(days=9))
-            self._deposer(commercial_koffi, clients_koffi[2], produits["biere"], Decimal("5"), maintenant - timedelta(days=7))
-            self._deposer(commercial_afiwa, clients_afiwa[0], produits["eau"], Decimal("12"), maintenant - timedelta(days=7))
-            self._deposer(commercial_afiwa, clients_afiwa[1], produits["biere"], Decimal("6"), maintenant - timedelta(days=6))
+            # Dépôts chez les marchands (puise directement dans le
+            # stock du dépôt central, tagué avec le membre du
+            # personnel qui a fait le dépôt).
+            self._deposer(gerant, marchands_gerant[0], produits["biere"], Decimal("8"), maintenant - timedelta(days=9))
+            self._deposer(gerant, marchands_gerant[1], produits["soda"], Decimal("6"), maintenant - timedelta(days=9))
+            self._deposer(gerant, marchands_gerant[2], produits["biere"], Decimal("5"), maintenant - timedelta(days=7))
+            self._deposer(chargee_ventes, marchands_chargee[0], produits["eau"], Decimal("12"), maintenant - timedelta(days=7))
+            self._deposer(chargee_ventes, marchands_chargee[1], produits["biere"], Decimal("6"), maintenant - timedelta(days=6))
 
-            # Ventes déclarées par certains clients (bascule marchandise -> financier).
-            self._vendre(clients_koffi[0], produits["biere"], Decimal("5"), maintenant - timedelta(days=4))
-            self._vendre(clients_koffi[1], produits["soda"], Decimal("6"), maintenant - timedelta(days=3))
-            self._vendre(clients_afiwa[0], produits["eau"], Decimal("9"), maintenant - timedelta(days=2))
+            # Ventes déclarées par certains marchands (bascule marchandise -> financier).
+            self._vendre(marchands_gerant[0], produits["biere"], Decimal("5"), maintenant - timedelta(days=4))
+            self._vendre(marchands_gerant[1], produits["soda"], Decimal("6"), maintenant - timedelta(days=3))
+            self._vendre(marchands_chargee[0], produits["eau"], Decimal("9"), maintenant - timedelta(days=2))
 
-            # Un retour client vers le commercial.
-            self._retourner(clients_koffi[2], commercial_koffi, produits["biere"], Decimal("2"), maintenant - timedelta(days=1))
+            # Un retour de marchandise invendue, vers le dépôt central.
+            self._retourner(marchands_gerant[2], gerant, produits["biere"], Decimal("2"), maintenant - timedelta(days=1))
 
             # Encaissements (règlements partiels).
-            self._encaisser(clients_koffi[0], Decimal("2500"), commercial_koffi, maintenant - timedelta(days=1))
-            self._encaisser(clients_afiwa[0], Decimal("1500"), commercial_afiwa, maintenant)
+            self._encaisser(marchands_gerant[0], Decimal("2500"), gerant, maintenant - timedelta(days=1))
+            self._encaisser(marchands_chargee[0], Decimal("1500"), chargee_ventes, maintenant)
 
             # Réception de stock au bar et au restaurant.
             self._recevoir(bar, produits["biere"], Decimal("50"), maintenant - timedelta(days=5))
@@ -126,17 +127,17 @@ class Command(BaseCommand):
             self._vendre_directement(restaurant, produits["menu_poulet"], Decimal("4"), maintenant)
             self._vendre_directement(restaurant, produits["menu_poisson"], Decimal("2"), maintenant)
 
-            # Marchand cash (Circuit 1) : achète et paie comptant au dépôt,
-            # aucun solde à suivre pour lui, juste sa fiche et son historique.
-            marchand_bella = self._creer_marchand_cash(
+            # Client cash (Circuit 1) : commande et paie comptant au
+            # dépôt, aucun solde à suivre, juste sa fiche et son historique.
+            client_bella = self._creer_client_cash(
                 "Boutique Bella", "90 44 33 22", "Marché d'Adawlato, Lomé",
                 latitude=Decimal("6.135831"), longitude=Decimal("1.222273"),
             )
             self._vendre_directement(
-                depot, produits["biere"], Decimal("6"), maintenant - timedelta(days=6), client=marchand_bella
+                depot, produits["biere"], Decimal("6"), maintenant - timedelta(days=6), client=client_bella
             )
             self._vendre_directement(
-                depot, produits["eau"], Decimal("10"), maintenant, client=marchand_bella
+                depot, produits["eau"], Decimal("10"), maintenant, client=client_bella
             )
 
             # Réservations de places de fête.
@@ -156,9 +157,9 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS("Données fictives créées."))
-        self.stdout.write("Comptes commerciaux créés (mot de passe : test1234) :")
-        self.stdout.write("  - koffi.amegnran")
-        self.stdout.write("  - afiwa.dogbe")
+        self.stdout.write("Comptes du personnel créés (mot de passe : test1234) :")
+        self.stdout.write("  - koffi.amegnran (gérant)")
+        self.stdout.write("  - afiwa.dogbe (chargée des ventes)")
 
     # -- Création des entités de base ------------------------------------
 
@@ -214,67 +215,56 @@ class Command(BaseCommand):
         )
         return commercial
 
-    def _creer_client(self, commercial, nom, telephone, adresse):
-        client, _ = Client.objects.get_or_create(
+    def _creer_marchand(self, commercial, nom, telephone, adresse):
+        marchand, _ = Client.objects.get_or_create(
             commercial=commercial,
             nom=nom,
-            defaults={"telephone": telephone, "adresse": adresse},
+            defaults={"mode_vente": Client.ModeVente.DEPOT_VENTE, "telephone": telephone, "adresse": adresse},
         )
-        return client
+        return marchand
 
     # -- Mouvements / encaissements ---------------------------------------
 
-    def _affecter(self, commercial, produit, quantite, date):
-        enregistrer_mouvement_stock(
-            uuid=uuid.uuid4(),
-            type="AFFECTATION_COMMERCIAL",
-            produit=produit,
-            quantite=quantite,
-            commercial=commercial,
-            date_mouvement=date,
-            commentaire="Affectation de test",
-        )
-
-    def _deposer(self, commercial, client, produit, quantite, date):
+    def _deposer(self, commercial, marchand, produit, quantite, date):
         enregistrer_mouvement_stock(
             uuid=uuid.uuid4(),
             type="DEPOT_CLIENT",
             produit=produit,
             quantite=quantite,
             commercial=commercial,
-            client=client,
+            client=marchand,
             date_mouvement=date,
             commentaire="Dépôt de test",
         )
 
-    def _vendre(self, client, produit, quantite, date):
+    def _vendre(self, marchand, produit, quantite, date):
         enregistrer_mouvement_stock(
             uuid=uuid.uuid4(),
             type="VENTE_DECLAREE",
             produit=produit,
             quantite=quantite,
-            client=client,
-            commercial=client.commercial,
+            client=marchand,
+            commercial=marchand.commercial,
             date_mouvement=date,
             commentaire="Vente déclarée de test",
         )
 
-    def _retourner(self, client, commercial, produit, quantite, date):
+    def _retourner(self, marchand, commercial, produit, quantite, date):
         enregistrer_mouvement_stock(
             uuid=uuid.uuid4(),
             type="RETOUR_CLIENT",
             produit=produit,
             quantite=quantite,
-            client=client,
+            client=marchand,
             commercial=commercial,
             date_mouvement=date,
             commentaire="Retour de test",
         )
 
-    def _encaisser(self, client, montant, collecte_par, date):
+    def _encaisser(self, marchand, montant, collecte_par, date):
         enregistrer_encaissement(
             uuid=uuid.uuid4(),
-            client=client,
+            client=marchand,
             montant=montant,
             collecte_par=collecte_par,
             date_encaissement=date,
@@ -304,8 +294,8 @@ class Command(BaseCommand):
             commentaire="Vente directe de test",
         )
 
-    def _creer_marchand_cash(self, nom, telephone, adresse, latitude=None, longitude=None):
-        marchand, _ = Client.objects.get_or_create(
+    def _creer_client_cash(self, nom, telephone, adresse, latitude=None, longitude=None):
+        client, _ = Client.objects.get_or_create(
             nom=nom,
             mode_vente=Client.ModeVente.CASH,
             defaults={
@@ -315,7 +305,7 @@ class Command(BaseCommand):
                 "longitude": longitude,
             },
         )
-        return marchand
+        return client
 
     def _reserver(self, point_de_vente, nom_client, telephone_client, type_evenement, nombre_personnes, date, statut=Reservation.Statut.CONFIRMEE):
         Reservation.objects.get_or_create(
@@ -355,7 +345,7 @@ class Command(BaseCommand):
 
         Client.objects.filter(
             Q(commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX)
-            | Q(nom__in=NOMS_MARCHANDS_CASH)
+            | Q(nom__in=NOMS_CLIENTS_CASH)
         ).delete()
         Commercial.objects.filter(utilisateur__username__in=USERNAMES_COMMERCIAUX).delete()
         User.objects.filter(username__in=USERNAMES_COMMERCIAUX).delete()

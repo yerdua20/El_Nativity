@@ -46,29 +46,22 @@ class TarifAdmin(admin.ModelAdmin):
 
 @admin.register(Commercial)
 class CommercialAdmin(admin.ModelAdmin):
-    list_display = (
-        "nom",
-        "prenom",
-        "point_de_vente",
-        "actif",
-        "solde_marchandise",
-        "solde_financier",
-    )
+    list_display = ("nom", "prenom", "point_de_vente", "actif")
     list_filter = ("actif", "point_de_vente")
     search_fields = ("nom", "prenom", "telephone")
-    readonly_fields = ("solde_marchandise", "solde_financier")
 
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
         "nom",
+        "mode_vente",
         "commercial",
         "actif",
         "solde_marchandise",
         "solde_financier",
     )
-    list_filter = ("actif", "commercial")
+    list_filter = ("actif", "mode_vente", "commercial")
     search_fields = ("nom", "telephone")
     readonly_fields = ("solde_marchandise", "solde_financier")
 

@@ -2,13 +2,22 @@
 Modèles métier de l'application.
 
 Deux lignes d'activité cohabitent :
-- la distribution en dépôt-vente, via des commerciaux qui confient de
-  la marchandise à des clients ;
-- l'exploitation directe de points de vente (bars, restaurant).
+- la distribution en dépôt-vente vers des marchands (Client avec
+  mode_vente=DEPOT_VENTE), à qui de la marchandise est confiée sans
+  paiement immédiat ;
+- l'exploitation directe de points de vente (dépôt, bars, restaurant),
+  qui couvre aussi les clients cash (Client avec mode_vente=CASH) qui
+  paient comptant et n'ont aucun solde à suivre dans le temps.
 
-Pour chaque client ET chaque commercial, deux soldes sont tenus à
-jour, en valeur (et non en quantité, les commerciaux/clients portant
-des produits hétérogènes) :
+Un « commercial » (Commercial) est un membre du personnel (gérant,
+chargée des ventes...) qui n'a plus de portefeuille ni de solde
+individuel : la marchandise part du dépôt central comme un lot
+commun (un seul moyen de transport), personne n'en est responsable
+individuellement. Le champ `commercial` sur un dépôt chez un marchand
+sert uniquement de tag d'audit (« qui a fait ce dépôt »).
+
+Seul le marchand (Client, mode_vente=DEPOT_VENTE) porte un solde
+suivi dans le temps :
 
 - solde_marchandise = déposé - vendu déclaré - retourné
   (valeur de la marchandise en dépôt dont il faut encore rendre
@@ -16,11 +25,10 @@ des produits hétérogènes) :
 - solde_financier = ventes reconnues - encaissé
   (argent dû à la société pour des ventes déjà reconnues)
 
-Ces soldes sont dénormalisés sur Client et Commercial pour un accès
-rapide, mais ne doivent être modifiés que via les fonctions de
-core/services.py, qui les mettent à jour dans une transaction
+Ce solde ne doit être modifié que via les fonctions de
+core/services.py, qui le mettent à jour dans une transaction
 atomique en même temps que l'écriture (MouvementStock/Encaissement)
-qui les justifie.
+qui le justifie.
 """
 
 from decimal import Decimal
@@ -172,9 +180,10 @@ class Tarif(models.Model):
 
 class Commercial(models.Model):
     """
-    Un commercial confie de la marchandise à des clients (dépôt-vente).
-    Rattaché à un dépôt (PointDeVente de type DEPOT) qui sert de
-    référence pour la tarification de ses mouvements.
+    Un membre du personnel (gérant, chargée des ventes...) qui peut
+    être tagué comme responsable d'un dépôt chez un marchand — pur
+    audit, sans solde ni portefeuille individuel : la marchandise
+    part du dépôt central comme un lot commun.
     """
 
     utilisateur = models.OneToOneField(
@@ -197,16 +206,9 @@ class Commercial(models.Model):
     date_sortie = models.DateField(
         null=True,
         blank=True,
-        help_text="Renseignée au départ du commercial ; les soldes restent consultables.",
+        help_text="Renseignée au départ du commercial ; les marchands qu'il a tagués restent consultables.",
     )
     actif = models.BooleanField(default=True)
-
-    solde_marchandise = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal("0")
-    )
-    solde_financier = models.DecimalField(
-        max_digits=12, decimal_places=2, default=Decimal("0")
-    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -222,15 +224,17 @@ class Commercial(models.Model):
 
 class Client(models.Model):
     """
-    Un client, selon deux circuits distincts (voir `mode_vente`) :
+    Selon deux circuits distincts (voir `mode_vente`) :
 
-    - DEPOT_VENTE : un commercial lui confie de la marchandise sans
-      paiement immédiat (dépôt-vente classique). Les soldes
-      marchandise/financier ci-dessous suivent ce qu'il doit encore.
-    - CASH : un marchand qui achète et paie comptant directement
-      au dépôt, sans commercial intermédiaire. Rien à suivre dans le
-      temps pour lui : les soldes restent à zéro, on garde juste sa
-      fiche (coordonnées, localisation) et l'historique de ses achats.
+    - DEPOT_VENTE : un « marchand », à qui de la marchandise est
+      confiée sans paiement immédiat (dépôt-vente classique). Les
+      soldes marchandise/financier ci-dessous suivent ce qu'il doit
+      encore. `commercial` est le membre du personnel tagué comme
+      responsable de ce dépôt (audit, pas de solde de son côté).
+    - CASH : un « client », qui passe commande et paie comptant
+      directement au dépôt. Rien à suivre dans le temps pour lui :
+      les soldes restent à zéro, on garde juste sa fiche
+      (coordonnées, localisation) et l'historique de ses achats.
     """
 
     class ModeVente(models.TextChoices):
@@ -289,14 +293,9 @@ class MouvementStock(models.Model):
 
     class TypeMouvement(models.TextChoices):
         ENTREE_DEPOT = "ENTREE_DEPOT", "Entrée en dépôt (achat/réception)"
-        AFFECTATION_COMMERCIAL = (
-            "AFFECTATION_COMMERCIAL",
-            "Affectation à un commercial",
-        )
-        DEPOT_CLIENT = "DEPOT_CLIENT", "Dépôt chez un client"
-        VENTE_DECLAREE = "VENTE_DECLAREE", "Vente déclarée par un client"
-        RETOUR_CLIENT = "RETOUR_CLIENT", "Retour du client vers le commercial"
-        RETOUR_DEPOT = "RETOUR_DEPOT", "Retour du commercial vers le dépôt"
+        DEPOT_CLIENT = "DEPOT_CLIENT", "Dépôt chez un marchand"
+        VENTE_DECLAREE = "VENTE_DECLAREE", "Vente déclarée par un marchand"
+        RETOUR_CLIENT = "RETOUR_CLIENT", "Retour du marchand vers le dépôt"
         VENTE_DIRECTE = "VENTE_DIRECTE", "Vente directe en point de vente"
         PERTE = "PERTE", "Perte / casse"
 
@@ -382,12 +381,11 @@ class MouvementStock(models.Model):
 
 class Encaissement(models.Model):
     """
-    Argent reçu au titre du solde financier d'un client.
+    Argent reçu au titre du solde financier d'un marchand
+    (Client, mode_vente=DEPOT_VENTE).
 
-    Si un commercial a physiquement collecté cet argent pour le
-    compte de la société (`collecte_par`), son propre solde_financier
-    augmente d'autant : il en devient responsable jusqu'à remise en
-    trésorerie (flux de remise non encore implémenté).
+    `collecte_par` ne sert que d'audit (qui a physiquement collecté
+    cet argent) : le commercial n'a pas de solde propre à ajuster.
     """
 
     class MoyenPaiement(models.TextChoices):

@@ -154,16 +154,25 @@ class UserAdminViewSet(viewsets.ModelViewSet):
 
 _JEUX_EXPORT = {
     "clients": (
-        ["Nom", "Téléphone", "Adresse", "Commercial", "Solde marchandise", "Solde financier", "Actif"],
+        ["Nom", "Mode", "Téléphone", "Adresse", "Commercial", "Solde marchandise", "Solde financier", "Actif"],
         lambda: (
-            [c.nom, c.telephone, c.adresse, str(c.commercial), c.solde_marchandise, c.solde_financier, c.actif]
+            [
+                c.nom,
+                c.get_mode_vente_display(),
+                c.telephone,
+                c.adresse,
+                str(c.commercial) if c.commercial else "",
+                c.solde_marchandise,
+                c.solde_financier,
+                c.actif,
+            ]
             for c in Client.objects.select_related("commercial")
         ),
     ),
     "commerciaux": (
-        ["Nom", "Prénom", "Téléphone", "Point de vente", "Solde marchandise", "Solde financier", "Actif"],
+        ["Nom", "Prénom", "Téléphone", "Point de vente", "Actif"],
         lambda: (
-            [c.nom, c.prenom, c.telephone, str(c.point_de_vente), c.solde_marchandise, c.solde_financier, c.actif]
+            [c.nom, c.prenom, c.telephone, str(c.point_de_vente), c.actif]
             for c in Commercial.objects.select_related("point_de_vente")
         ),
     ),

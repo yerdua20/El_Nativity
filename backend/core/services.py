@@ -1,10 +1,11 @@
 """
 Point d'entrée unique pour toute écriture qui touche un solde
-(marchandise ou financier) d'un client ou d'un commercial.
+(marchandise ou financier) d'un marchand (Client, mode_vente=
+DEPOT_VENTE), ou le stock d'un point de vente.
 
 Toujours passer par ces fonctions plutôt que de créer un
 MouvementStock/Encaissement à la main : elles garantissent que
-l'écriture et la mise à jour des soldes se font dans une seule
+l'écriture et la mise à jour des soldes/stock se font dans une seule
 transaction atomique, avec F() pour éviter les conditions de course.
 """
 
@@ -12,7 +13,7 @@ from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
 
-from core.models import Client, Commercial, Encaissement, MouvementStock, StockPointDeVente, Tarif
+from core.models import Client, Encaissement, MouvementStock, StockPointDeVente, Tarif
 
 
 def _ajuster_solde_client(client, *, delta_marchandise=None, delta_financier=None):
@@ -25,16 +26,6 @@ def _ajuster_solde_client(client, *, delta_marchandise=None, delta_financier=Non
         Client.objects.filter(pk=client.pk).update(**updates)
 
 
-def _ajuster_solde_commercial(commercial, *, delta_marchandise=None, delta_financier=None):
-    updates = {}
-    if delta_marchandise:
-        updates["solde_marchandise"] = F("solde_marchandise") + delta_marchandise
-    if delta_financier:
-        updates["solde_financier"] = F("solde_financier") + delta_financier
-    if updates:
-        Commercial.objects.filter(pk=commercial.pk).update(**updates)
-
-
 def _ajuster_stock_point_de_vente(point_de_vente, produit, delta_quantite):
     stock, _ = StockPointDeVente.objects.get_or_create(
         point_de_vente=point_de_vente, produit=produit
@@ -44,20 +35,19 @@ def _ajuster_stock_point_de_vente(point_de_vente, produit, delta_quantite):
     )
 
 
-# Effet de chaque type de mouvement sur les soldes marchandise du
-# client et du commercial concernés (en multiples du montant valorisé).
+# Effet de chaque type de mouvement sur les soldes du marchand
+# concerné (en multiples du montant valorisé). Le commercial n'a pas
+# de solde propre : il ne sert que de tag d'audit sur le mouvement.
 _EFFETS_MARCHANDISE = {
-    MouvementStock.TypeMouvement.AFFECTATION_COMMERCIAL: {"commercial": 1},
-    MouvementStock.TypeMouvement.DEPOT_CLIENT: {"commercial": -1, "client": 1},
+    MouvementStock.TypeMouvement.DEPOT_CLIENT: {"client": 1},
     MouvementStock.TypeMouvement.VENTE_DECLAREE: {"client": -1},
-    MouvementStock.TypeMouvement.RETOUR_CLIENT: {"client": -1, "commercial": 1},
-    MouvementStock.TypeMouvement.RETOUR_DEPOT: {"commercial": -1},
+    MouvementStock.TypeMouvement.RETOUR_CLIENT: {"client": -1},
     # ENTREE_DEPOT, VENTE_DIRECTE, PERTE : pas d'effet sur un solde
-    # client/commercial (stock de point de vente, ou perte sèche).
+    # marchand (stock de point de vente, ou perte sèche).
 }
 
 # VENTE_DECLAREE fait basculer la valeur du solde marchandise du
-# client vers son solde financier (la vente est désormais reconnue).
+# marchand vers son solde financier (la vente est désormais reconnue).
 _EFFETS_FINANCIER = {
     MouvementStock.TypeMouvement.VENTE_DECLAREE: {"client": 1},
 }
@@ -65,15 +55,16 @@ _EFFETS_FINANCIER = {
 # Effet de chaque type de mouvement sur le stock du point de vente
 # concerné (en multiples de la quantité, pas de la valeur : un point
 # de vente porte des unités physiques, pas un solde en argent).
+# DEPOT_CLIENT/RETOUR_CLIENT résolvent leur point de vente via
+# pdv_tarification (le dépôt de rattachement du commercial qui a fait
+# le mouvement) : le dépôt chez un marchand puise directement dans le
+# stock du dépôt central, il n'y a plus d'étape d'affectation.
 _EFFETS_STOCK_POINT_DE_VENTE = {
     MouvementStock.TypeMouvement.ENTREE_DEPOT: 1,
-    MouvementStock.TypeMouvement.AFFECTATION_COMMERCIAL: -1,
-    MouvementStock.TypeMouvement.RETOUR_DEPOT: 1,
+    MouvementStock.TypeMouvement.DEPOT_CLIENT: -1,
+    MouvementStock.TypeMouvement.RETOUR_CLIENT: 1,
     MouvementStock.TypeMouvement.VENTE_DIRECTE: -1,
     MouvementStock.TypeMouvement.PERTE: -1,
-    # DEPOT_CLIENT, VENTE_DECLAREE, RETOUR_CLIENT : la marchandise a
-    # déjà quitté le point de vente via une AFFECTATION_COMMERCIAL
-    # antérieure, pas d'effet ici.
 }
 
 
@@ -95,7 +86,7 @@ def enregistrer_mouvement_stock(
     cree_par=None,
 ):
     """
-    Crée un MouvementStock et répercute son effet sur les soldes concernés.
+    Crée un MouvementStock et répercute son effet sur les soldes/stock concernés.
 
     Idempotent sur `uuid` : un même mouvement resynchronisé après une
     coupure réseau (retry côté app hors ligne) renvoie l'enregistrement
@@ -133,11 +124,10 @@ def enregistrer_mouvement_stock(
         cree_par=cree_par,
     )
 
-    if montant is not None:
+    if montant is not None and client is not None:
         effets_marchandise = _EFFETS_MARCHANDISE.get(type, {})
         effets_financier = _EFFETS_FINANCIER.get(type, {})
-
-        if client is not None and ("client" in effets_marchandise or "client" in effets_financier):
+        if "client" in effets_marchandise or "client" in effets_financier:
             _ajuster_solde_client(
                 client,
                 delta_marchandise=montant * effets_marchandise["client"]
@@ -148,15 +138,10 @@ def enregistrer_mouvement_stock(
                 else None,
             )
 
-        if commercial is not None and "commercial" in effets_marchandise:
-            _ajuster_solde_commercial(
-                commercial, delta_marchandise=montant * effets_marchandise["commercial"]
-            )
-
-    if point_de_vente is not None:
+    if pdv_tarification is not None:
         multiplicateur_stock = _EFFETS_STOCK_POINT_DE_VENTE.get(type)
         if multiplicateur_stock is not None:
-            _ajuster_stock_point_de_vente(point_de_vente, produit, quantite * multiplicateur_stock)
+            _ajuster_stock_point_de_vente(pdv_tarification, produit, quantite * multiplicateur_stock)
 
     return mouvement
 
@@ -174,10 +159,12 @@ def enregistrer_encaissement(
     cree_par=None,
 ):
     """
-    Crée un Encaissement et diminue le solde financier du client d'autant.
+    Crée un Encaissement et diminue le solde financier du marchand d'autant.
 
     Idempotent sur `uuid`, pour les mêmes raisons que
-    enregistrer_mouvement_stock.
+    enregistrer_mouvement_stock. `collecte_par` est un simple tag
+    d'audit (qui a physiquement collecté l'argent) : le commercial
+    n'a pas de solde propre à ajuster.
     """
 
     existant = Encaissement.objects.filter(uuid=uuid).first()
@@ -196,9 +183,5 @@ def enregistrer_encaissement(
     )
 
     _ajuster_solde_client(client, delta_financier=-montant)
-    if collecte_par is not None:
-        # L'argent est physiquement chez le commercial tant qu'il ne
-        # l'a pas remis à la société (flux de remise à implémenter).
-        _ajuster_solde_commercial(collecte_par, delta_financier=montant)
 
     return encaissement
