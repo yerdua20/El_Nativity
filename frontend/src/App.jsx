@@ -12,7 +12,6 @@ import FicheCommercial from './pages/FicheCommercial'
 import Historique from './pages/Historique'
 import Login from './pages/Login'
 import Marchands from './pages/Marchands'
-import NouveauDepot from './pages/NouveauDepot'
 import Profil from './pages/Profil'
 import Reservations from './pages/Reservations'
 import Retours from './pages/Retours'
@@ -37,7 +36,6 @@ export default function App() {
           <Route path="/carte" element={protegee(<Carte />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/commerciaux/:id" element={protegee(<FicheCommercial />)} />
-          <Route path="/depot" element={protegee(<NouveauDepot />)} />
           <Route path="/stock" element={protegee(<Stock />)} />
           <Route path="/vente" element={protegee(<VenteDeclaree />)} />
           <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
