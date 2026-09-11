@@ -1,6 +1,5 @@
 import { Briefcase, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { creerCommercial, listerCommerciaux, listerPointsDeVente, marquerCommercialParti } from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
@@ -178,19 +177,13 @@ export default function Commerciaux() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    <Link to={`/commerciaux/${commercial.id}`} className="text-or-600 underline hover:text-or-700">
-                      Voir la fiche
-                    </Link>
                     {commercial.actif && (
-                      <>
-                        {' · '}
-                        <button
-                          onClick={() => handleDepart(commercial)}
-                          className="text-red-600 underline hover:text-red-800"
-                        >
-                          Marquer comme parti
-                        </button>
-                      </>
+                      <button
+                        onClick={() => handleDepart(commercial)}
+                        className="text-red-600 underline hover:text-red-800"
+                      >
+                        Marquer comme parti
+                      </button>
                     )}
                   </td>
                 </tr>
