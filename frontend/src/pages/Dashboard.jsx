@@ -6,7 +6,6 @@ import {
   History,
   Home,
   Package,
-  ShoppingCart,
   Store,
   TrendingUp,
   Undo2,
@@ -25,8 +24,7 @@ import {
 import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
-  { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Voir la liste et les soldes, déposer de la marchandise', icon: Store },
-  { to: '/vente', titre: 'Vente déclarée', description: 'Enregistrer la vente déclarée par un marchand', icon: ShoppingCart },
+  { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Soldes, dépôts et ventes déclarées par marchand', icon: Store },
   { to: '/encaissement', titre: 'Encaissement', description: "Enregistrer un paiement d'un marchand", icon: CreditCard },
   { to: '/retours', titre: 'Retours', description: 'Retour de marchandise invendue vers le dépôt', icon: Undo2 },
   { to: '/clients', titre: 'Clients', description: 'Clients qui commandent et paient comptant', icon: Users },

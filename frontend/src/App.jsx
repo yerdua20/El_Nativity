@@ -15,7 +15,6 @@ import Profil from './pages/Profil'
 import Reservations from './pages/Reservations'
 import Retours from './pages/Retours'
 import Stock from './pages/Stock'
-import VenteDeclaree from './pages/VenteDeclaree'
 import VenteDirecte from './pages/VenteDirecte'
 
 function protegee(element) {
@@ -35,7 +34,6 @@ export default function App() {
           <Route path="/carte" element={protegee(<Carte />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/stock" element={protegee(<Stock />)} />
-          <Route path="/vente" element={protegee(<VenteDeclaree />)} />
           <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
           <Route path="/reservations" element={protegee(<Reservations />)} />
           <Route path="/retours" element={protegee(<Retours />)} />
