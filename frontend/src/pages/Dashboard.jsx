@@ -25,7 +25,7 @@ import {
 import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
-  { to: '/marchands', titre: 'Marchands', description: 'Voir la liste et les soldes, déposer de la marchandise', icon: Store },
+  { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Voir la liste et les soldes, déposer de la marchandise', icon: Store },
   { to: '/vente', titre: 'Vente déclarée', description: 'Enregistrer la vente déclarée par un marchand', icon: ShoppingCart },
   { to: '/encaissement', titre: 'Encaissement', description: "Enregistrer un paiement d'un marchand", icon: CreditCard },
   { to: '/retours', titre: 'Retours', description: 'Retour de marchandise invendue vers le dépôt', icon: Undo2 },
@@ -203,9 +203,9 @@ export default function Dashboard() {
       </div>
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile label="Marchands" value={marchands ? marchands.length : '…'} icon={Users} tonalite="or" />
+        <StatTile label="Points de dépôt-vente" value={marchands ? marchands.length : '…'} icon={Users} tonalite="or" />
         <StatTile
-          label="Commerciaux actifs"
+          label="Personnels actifs"
           value={commerciaux ? commerciauxActifs : '…'}
           icon={Briefcase}
           tonalite="neutre"

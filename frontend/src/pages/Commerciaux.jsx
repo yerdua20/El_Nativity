@@ -74,7 +74,7 @@ export default function Commerciaux() {
 
   return (
     <Layout>
-      <EnTeteBandeau titre="Commerciaux" sousTitre="Gérez les commerciaux et leurs informations" icone={Briefcase} />
+      <EnTeteBandeau titre="Personnels" sousTitre="Gérez le personnel et leurs informations" icone={Briefcase} />
 
       <div className="mb-4 flex justify-end">
         <button
