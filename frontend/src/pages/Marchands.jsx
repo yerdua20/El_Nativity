@@ -1,7 +1,7 @@
-import { MapPin, Plus, Search, Users } from 'lucide-react'
+import { MapPin, Plus, Search, Store } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { creerClient, listerClients } from '../api/ressources'
+import { creerClient, listerClients, listerCommerciaux } from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 
@@ -13,33 +13,46 @@ function Avatar({ nom }) {
   )
 }
 
-export default function Clients() {
-  const [clients, setClients] = useState(null)
+export default function Marchands() {
+  const [marchands, setMarchands] = useState(null)
+  const [commerciaux, setCommerciaux] = useState([])
   const [recherche, setRecherche] = useState('')
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
 
   const [nom, setNom] = useState('')
   const [telephone, setTelephone] = useState('')
   const [adresse, setAdresse] = useState('')
+  const [commercialId, setCommercialId] = useState('')
   const [position, setPosition] = useState(null)
   const [statutGps, setStatutGps] = useState('en_attente')
   const [erreur, setErreur] = useState('')
   const [enCours, setEnCours] = useState(false)
 
-  function rafraichirClients() {
+  function rafraichir() {
     listerClients()
-      .then((liste) => setClients(liste.filter((c) => c.mode_vente === 'CASH')))
-      .catch(() => setErreur('Impossible de charger les clients.'))
+      .then((liste) => setMarchands(liste.filter((c) => c.mode_vente === 'DEPOT_VENTE')))
+      .catch(() => setErreur('Impossible de charger les marchands.'))
   }
 
-  useEffect(rafraichirClients, [])
+  useEffect(() => {
+    rafraichir()
+    listerCommerciaux().then((liste) => {
+      setCommerciaux(liste)
+      if (liste.length > 0) setCommercialId(String(liste[0].id))
+    })
+  }, [])
 
-  const clientsFiltres = useMemo(() => {
-    if (!clients) return null
+  const nomsCommerciaux = useMemo(
+    () => Object.fromEntries(commerciaux.map((c) => [c.id, `${c.prenom} ${c.nom}`])),
+    [commerciaux],
+  )
+
+  const marchandsFiltres = useMemo(() => {
+    if (!marchands) return null
     const terme = recherche.trim().toLowerCase()
-    if (!terme) return clients
-    return clients.filter((c) => c.nom.toLowerCase().includes(terme))
-  }, [clients, recherche])
+    if (!terme) return marchands
+    return marchands.filter((c) => c.nom.toLowerCase().includes(terme))
+  }, [marchands, recherche])
 
   function capturerPosition() {
     if (!navigator.geolocation) {
@@ -62,7 +75,13 @@ export default function Clients() {
     setErreur('')
     setEnCours(true)
     try {
-      const payload = { mode_vente: 'CASH', nom, telephone, adresse }
+      const payload = {
+        mode_vente: 'DEPOT_VENTE',
+        commercial: Number(commercialId),
+        nom,
+        telephone,
+        adresse,
+      }
       if (position) {
         payload.latitude = position.latitude
         payload.longitude = position.longitude
@@ -74,9 +93,9 @@ export default function Clients() {
       setPosition(null)
       setStatutGps('en_attente')
       setFormulaireOuvert(false)
-      rafraichirClients()
+      rafraichir()
     } catch {
-      setErreur('Impossible de créer ce client.')
+      setErreur('Impossible de créer ce marchand.')
     } finally {
       setEnCours(false)
     }
@@ -85,9 +104,9 @@ export default function Clients() {
   return (
     <Layout>
       <EnTeteBandeau
-        titre="Clients"
-        sousTitre="Clients qui commandent et paient comptant au dépôt"
-        icone={Users}
+        titre="Marchands"
+        sousTitre="Boutiques en dépôt-vente : marchandise confiée, à rendre compte"
+        icone={Store}
       />
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -95,7 +114,7 @@ export default function Clients() {
           <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             className="w-full rounded border border-slate-300 py-2 pr-3 pl-9 text-sm focus:border-or-400 focus:outline-none"
-            placeholder="Rechercher un client..."
+            placeholder="Rechercher un marchand..."
             value={recherche}
             onChange={(event) => setRecherche(event.target.value)}
           />
@@ -105,13 +124,13 @@ export default function Clients() {
           className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
         >
           <Plus className="h-4 w-4" />
-          Nouveau client
+          Nouveau marchand
         </button>
       </div>
 
       {formulaireOuvert && (
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
             <input
               className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               placeholder="Nom / boutique"
@@ -131,6 +150,21 @@ export default function Clients() {
               value={adresse}
               onChange={(event) => setAdresse(event.target.value)}
             />
+            <select
+              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              value={commercialId}
+              onChange={(event) => setCommercialId(event.target.value)}
+              required
+            >
+              <option value="" disabled>
+                Commercial responsable
+              </option>
+              {commerciaux.map((commercial) => (
+                <option key={commercial.id} value={commercial.id}>
+                  {commercial.prenom} {commercial.nom}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="mt-3 flex items-center gap-2 text-sm">
@@ -163,43 +197,47 @@ export default function Clients() {
       )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        {!clientsFiltres && <p className="p-4 text-sm text-slate-500">Chargement...</p>}
-        {clientsFiltres && clientsFiltres.length === 0 && (
-          <p className="p-4 text-sm text-slate-500">Aucun client trouvé.</p>
+        {!marchandsFiltres && <p className="p-4 text-sm text-slate-500">Chargement...</p>}
+        {marchandsFiltres && marchandsFiltres.length === 0 && (
+          <p className="p-4 text-sm text-slate-500">Aucun marchand trouvé.</p>
         )}
-        {clientsFiltres && clientsFiltres.length > 0 && (
+        {marchandsFiltres && marchandsFiltres.length > 0 && (
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500">
                 <th className="px-4 py-3 font-medium">Nom</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
-                <th className="px-4 py-3 font-medium">Adresse</th>
+                <th className="px-4 py-3 font-medium">Commercial responsable</th>
+                <th className="px-4 py-3 font-medium">Soldes</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {clientsFiltres.map((client) => (
-                <tr key={client.id}>
+              {marchandsFiltres.map((marchand) => (
+                <tr key={marchand.id}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <Avatar nom={client.nom} />
-                      {client.nom}
+                      <Avatar nom={marchand.nom} />
+                      {marchand.nom}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-slate-500">{client.telephone || '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{client.adresse || '—'}</td>
+                  <td className="px-4 py-3 text-slate-500">{marchand.telephone || '—'}</td>
+                  <td className="px-4 py-3 text-slate-500">{nomsCommerciaux[marchand.commercial] ?? '—'}</td>
+                  <td className="px-4 py-3 text-slate-500">
+                    Marchandise : {marchand.solde_marchandise} · Financier : {marchand.solde_financier}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        client.actif ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        marchand.actif ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                       }`}
                     >
-                      {client.actif ? 'Actif' : 'Inactif'}
+                      {marchand.actif ? 'Actif' : 'Inactif'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link to={`/clients/${client.id}`} className="text-or-600 underline hover:text-or-700">
+                    <Link to={`/clients/${marchand.id}`} className="text-or-600 underline hover:text-or-700">
                       Voir la fiche
                     </Link>
                   </td>

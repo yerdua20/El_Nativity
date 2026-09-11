@@ -52,11 +52,9 @@ function tempsRelatif(dateIso) {
 
 const LIBELLES_TYPE = {
   ENTREE_DEPOT: 'Entrée dépôt',
-  AFFECTATION_COMMERCIAL: 'Affectation',
-  DEPOT_CLIENT: 'Dépôt client',
+  DEPOT_CLIENT: 'Dépôt marchand',
   VENTE_DECLAREE: 'Vente déclarée',
-  RETOUR_CLIENT: 'Retour client',
-  RETOUR_DEPOT: 'Retour dépôt',
+  RETOUR_CLIENT: 'Retour marchand',
   VENTE_DIRECTE: 'Vente directe',
   PERTE: 'Perte',
 }
@@ -162,19 +160,20 @@ export default function Dashboard() {
       }, {}),
   ).sort((a, b) => (nomsPdv[a.pointDeVente] ?? '').localeCompare(nomsPdv[b.pointDeVente] ?? ''))
 
-  const soldeMarchandiseTotal = clients?.reduce((total, c) => total + Number(c.solde_marchandise), 0)
-  const creancesTotal = clients?.reduce((total, c) => total + Number(c.solde_financier), 0)
+  const marchands = clients?.filter((c) => c.mode_vente === 'DEPOT_VENTE')
+  const soldeMarchandiseTotal = marchands?.reduce((total, c) => total + Number(c.solde_marchandise), 0)
+  const creancesTotal = marchands?.reduce((total, c) => total + Number(c.solde_financier), 0)
   const commerciauxActifs = commerciaux?.filter((c) => c.actif).length
 
-  const topCommerciaux =
-    commerciaux
+  const topMarchandise =
+    marchands
       ?.filter((c) => Number(c.solde_marchandise) > 0)
       .sort((a, b) => Number(b.solde_marchandise) - Number(a.solde_marchandise))
       .slice(0, 5)
-      .map((c) => ({ nom: `${c.prenom} ${c.nom}`, valeur: Number(c.solde_marchandise) })) ?? []
+      .map((c) => ({ nom: c.nom, valeur: Number(c.solde_marchandise) })) ?? []
 
   const topCreances =
-    clients
+    marchands
       ?.filter((c) => Number(c.solde_financier) > 0)
       .sort((a, b) => Number(b.solde_financier) - Number(a.solde_financier))
       .slice(0, 5)
@@ -205,7 +204,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile label="Clients" value={clients ? clients.length : '…'} icon={Users} tonalite="or" />
+        <StatTile label="Marchands" value={marchands ? marchands.length : '…'} icon={Users} tonalite="or" />
         <StatTile
           label="Commerciaux actifs"
           value={commerciaux ? commerciauxActifs : '…'}
@@ -214,21 +213,21 @@ export default function Dashboard() {
         />
         <StatTile
           label="Marchandise en cours"
-          value={clients ? formaterMontant(soldeMarchandiseTotal) : '…'}
+          value={marchands ? formaterMontant(soldeMarchandiseTotal) : '…'}
           icon={Package}
           tonalite="or"
         />
         <StatTile
-          label="Créances clients"
-          value={clients ? formaterMontant(creancesTotal) : '…'}
+          label="Créances marchands"
+          value={marchands ? formaterMontant(creancesTotal) : '…'}
           icon={FileText}
           tonalite="neutre"
         />
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <GraphiqueBarres titre="Marchandise par commercial" donnees={topCommerciaux} hex="#ce9a2e" tonalite="or" />
-        <GraphiqueBarres titre="Plus grosses créances clients" donnees={topCreances} hex="#52525b" tonalite="neutre" />
+        <GraphiqueBarres titre="Marchandise par marchand" donnees={topMarchandise} hex="#ce9a2e" tonalite="or" />
+        <GraphiqueBarres titre="Plus grosses créances marchands" donnees={topCreances} hex="#52525b" tonalite="neutre" />
       </div>
 
       <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">

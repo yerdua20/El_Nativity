@@ -6,11 +6,9 @@ import Layout from '../components/Layout'
 
 const LIBELLES_TYPE = {
   ENTREE_DEPOT: 'Entrée dépôt',
-  AFFECTATION_COMMERCIAL: 'Affectation',
-  DEPOT_CLIENT: 'Dépôt client',
+  DEPOT_CLIENT: 'Dépôt marchand',
   VENTE_DECLAREE: 'Vente déclarée',
-  RETOUR_CLIENT: 'Retour client',
-  RETOUR_DEPOT: 'Retour dépôt',
+  RETOUR_CLIENT: 'Retour marchand',
   VENTE_DIRECTE: 'Vente directe',
   PERTE: 'Perte',
 }

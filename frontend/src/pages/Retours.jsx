@@ -1,6 +1,6 @@
 import { Undo2 } from 'lucide-react'
 import { useState } from 'react'
-import { listerClients, listerCommerciaux, listerPointsDeVente, listerProduits } from '../api/ressources'
+import { listerClients, listerCommerciaux, listerProduits } from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
@@ -10,14 +10,11 @@ export default function Retours() {
   const clients = useRessource(listerClients, 'cache_clients')
   const commerciaux = useRessource(listerCommerciaux, 'cache_commerciaux')
   const produits = useRessource(listerProduits, 'cache_produits')
-  const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
 
-  const [type, setType] = useState('RETOUR_CLIENT')
   const [produitId, setProduitId] = useState('')
   const [quantite, setQuantite] = useState('')
   const [commercialId, setCommercialId] = useState('')
   const [clientId, setClientId] = useState('')
-  const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [succes, setSucces] = useState('')
   const [enCours, setEnCours] = useState(false)
 
@@ -29,12 +26,11 @@ export default function Retours() {
       endpoint: '/mouvements-stock/',
       payload: {
         uuid: crypto.randomUUID(),
-        type,
+        type: 'RETOUR_CLIENT',
         produit: produitId,
         quantite,
         commercial: commercialId,
-        client: type === 'RETOUR_CLIENT' ? clientId : undefined,
-        point_de_vente: type === 'RETOUR_DEPOT' ? pointDeVenteId : undefined,
+        client: clientId,
         date_mouvement: new Date().toISOString(),
       },
     })
@@ -47,64 +43,33 @@ export default function Retours() {
     <Layout>
       <EnTeteBandeau
         titre="Retours"
-        sousTitre="Enregistrer un retour de marchandise chez un client"
+        sousTitre="Enregistrer un retour de marchandise invendue vers le dépôt"
         icone={Undo2}
       />
+      <p className="mb-4 text-sm text-slate-500">
+        La quantité retournée recrédite directement le stock du dépôt central.
+      </p>
 
       <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
-        <div className="mb-4 flex gap-4 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={type === 'RETOUR_CLIENT'} onChange={() => setType('RETOUR_CLIENT')} />
-            Retour du client vers le commercial
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={type === 'RETOUR_DEPOT'} onChange={() => setType('RETOUR_DEPOT')} />
-            Retour du commercial vers le dépôt
-          </label>
-        </div>
-
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {type === 'RETOUR_CLIENT' && (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Client</label>
-              <select
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-                value={clientId}
-                onChange={(event) => setClientId(event.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Choisir un client
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Marchand</label>
+            <select
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              value={clientId}
+              onChange={(event) => setClientId(event.target.value)}
+              required
+            >
+              <option value="" disabled>
+                Choisir un marchand
+              </option>
+              {clients.filter((client) => client.mode_vente !== 'CASH').map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.nom}
                 </option>
-                {clients.filter((client) => client.mode_vente !== 'CASH').map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {type === 'RETOUR_DEPOT' && (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">Dépôt</label>
-              <select
-                className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-                value={pointDeVenteId}
-                onChange={(event) => setPointDeVenteId(event.target.value)}
-                required
-              >
-                <option value="" disabled>
-                  Choisir un dépôt
-                </option>
-                {pointsDeVente.map((pdv) => (
-                  <option key={pdv.id} value={pdv.id}>
-                    {pdv.nom}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+              ))}
+            </select>
+          </div>
 
           <div>
             <label className="mb-1 block text-sm font-medium text-slate-700">Commercial</label>

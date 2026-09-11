@@ -1,7 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import RouteProtegee from './auth/RouteProtegee'
-import AffectationCommercial from './pages/AffectationCommercial'
 import Carte from './pages/Carte'
 import Catalogue from './pages/Catalogue'
 import Clients from './pages/Clients'
@@ -12,6 +11,7 @@ import FicheClient from './pages/FicheClient'
 import FicheCommercial from './pages/FicheCommercial'
 import Historique from './pages/Historique'
 import Login from './pages/Login'
+import Marchands from './pages/Marchands'
 import NouveauDepot from './pages/NouveauDepot'
 import Profil from './pages/Profil'
 import ReceptionStock from './pages/ReceptionStock'
@@ -34,6 +34,7 @@ export default function App() {
           <Route path="/" element={protegee(<Dashboard />)} />
           <Route path="/clients" element={protegee(<Clients />)} />
           <Route path="/clients/:id" element={protegee(<FicheClient />)} />
+          <Route path="/marchands" element={protegee(<Marchands />)} />
           <Route path="/carte" element={protegee(<Carte />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/commerciaux/:id" element={protegee(<FicheCommercial />)} />
@@ -44,7 +45,6 @@ export default function App() {
           <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
           <Route path="/reservations" element={protegee(<Reservations />)} />
           <Route path="/retours" element={protegee(<Retours />)} />
-          <Route path="/affectation" element={protegee(<AffectationCommercial />)} />
           <Route path="/encaissement" element={protegee(<Encaissement />)} />
           <Route path="/historique" element={protegee(<Historique />)} />
           <Route path="/catalogue" element={protegee(<Catalogue />)} />

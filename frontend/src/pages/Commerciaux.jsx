@@ -66,8 +66,7 @@ export default function Commerciaux() {
   async function handleDepart(commercial) {
     const confirmation = window.confirm(
       `Marquer ${commercial.prenom} ${commercial.nom} comme parti ? ` +
-        `Ses soldes (marchandise : ${commercial.solde_marchandise}, financier : ${commercial.solde_financier}) ` +
-        "restent consultables mais il ne pourra plus se connecter à l'application terrain.",
+        'Les marchands qu\'il a tagués restent consultables mais il ne pourra plus se connecter à l\'application terrain.',
     )
     if (!confirmation) return
     await marquerCommercialParti(commercial.id)
@@ -154,7 +153,6 @@ export default function Commerciaux() {
                 <th className="px-4 py-3 font-medium">Nom</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
                 <th className="px-4 py-3 font-medium">Dépôt</th>
-                <th className="px-4 py-3 font-medium">Soldes</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
@@ -170,9 +168,6 @@ export default function Commerciaux() {
                   </td>
                   <td className="px-4 py-3 text-slate-500">{commercial.telephone || '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{nomsPdv[commercial.point_de_vente] ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">
-                    Marchandise : {commercial.solde_marchandise} · Financier : {commercial.solde_financier}
-                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2 py-1 text-xs font-medium ${

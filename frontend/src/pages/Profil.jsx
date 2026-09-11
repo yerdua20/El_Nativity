@@ -99,14 +99,6 @@ function OngletCommercial({ commercial }) {
           <dt className="text-sm text-slate-500">Dépôt de rattachement</dt>
           <dd className="font-medium text-slate-900">{nomPdv ?? '—'}</dd>
         </div>
-        <div>
-          <dt className="text-sm text-slate-500">Solde marchandise</dt>
-          <dd className="font-medium text-slate-900">{commercial.solde_marchandise}</dd>
-        </div>
-        <div>
-          <dt className="text-sm text-slate-500">Solde financier</dt>
-          <dd className="font-medium text-slate-900">{commercial.solde_financier}</dd>
-        </div>
       </dl>
     </div>
   )

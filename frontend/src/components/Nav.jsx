@@ -1,5 +1,4 @@
 import {
-  ArrowLeftRight,
   BookOpen,
   Boxes,
   Briefcase,
@@ -26,7 +25,8 @@ import { useFileAttente } from '../offline/useFileAttente'
 
 const LIENS = [
   { to: '/', label: 'Tableau de bord', end: true, icon: Home },
-  { to: '/clients', label: 'Marchands', icon: Users },
+  { to: '/clients', label: 'Clients', icon: Users },
+  { to: '/marchands', label: 'Marchands', icon: Store },
   { to: '/carte', label: 'Carte', icon: MapPin },
   { to: '/commerciaux', label: 'Commerciaux', icon: Briefcase },
   { to: '/depot', label: 'Nouveau dépôt', icon: PackagePlus },
@@ -36,7 +36,6 @@ const LIENS = [
   { to: '/vente-directe', label: 'Vente directe', icon: Store },
   { to: '/reservations', label: 'Réservations', icon: CalendarClock },
   { to: '/retours', label: 'Retours', icon: Undo2 },
-  { to: '/affectation', label: 'Affectation', icon: ArrowLeftRight },
   { to: '/encaissement', label: 'Encaissement', icon: CreditCard },
   { to: '/catalogue', label: 'Catalogue', icon: BookOpen },
   { to: '/historique', label: 'Historique', icon: History },
