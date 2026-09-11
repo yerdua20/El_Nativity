@@ -8,7 +8,6 @@ import {
   Package,
   Store,
   TrendingUp,
-  Undo2,
   Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -24,9 +23,8 @@ import {
 import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
-  { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Soldes, dépôts et ventes déclarées par marchand', icon: Store },
+  { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Soldes, dépôts, ventes déclarées et retours par marchand', icon: Store },
   { to: '/encaissement', titre: 'Encaissement', description: "Enregistrer un paiement d'un marchand", icon: CreditCard },
-  { to: '/retours', titre: 'Retours', description: 'Retour de marchandise invendue vers le dépôt', icon: Undo2 },
   { to: '/clients', titre: 'Clients', description: 'Clients qui commandent et paient comptant', icon: Users },
   { to: '/historique', titre: 'Historique', description: 'Mouvements et encaissements récents', icon: History },
 ]

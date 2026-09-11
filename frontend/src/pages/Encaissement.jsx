@@ -46,16 +46,16 @@ export default function Encaissement() {
 
   return (
     <Layout>
-      <EnTeteBandeau titre="Encaissement" sousTitre="Enregistrer un paiement d'un client" icone={CreditCard} />
+      <EnTeteBandeau titre="Encaissement" sousTitre="Enregistrer un paiement d'un marchand" icone={CreditCard} />
       <p className="mb-4 text-sm text-slate-500">
-        Diminue le solde financier du client. Si un commercial a physiquement collecté l'argent, son
-        propre solde financier augmente d'autant, en attendant la remise à la société.
+        Diminue le solde financier du marchand. "Collecté par" est un simple tag d'audit (qui a
+        physiquement reçu l'argent) : aucun solde ne lui est associé.
       </p>
 
       <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">Client</label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Marchand</label>
             <select
               className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
               value={clientId}
@@ -63,9 +63,9 @@ export default function Encaissement() {
               required
             >
               <option value="" disabled>
-                Choisir un client
+                Choisir un marchand
               </option>
-              {clients.map((client) => (
+              {clients.filter((client) => client.mode_vente !== 'CASH').map((client) => (
                 <option key={client.id} value={client.id}>
                   {client.nom}
                 </option>

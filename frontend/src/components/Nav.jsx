@@ -11,7 +11,6 @@ import {
   RefreshCw,
   Settings,
   Store,
-  Undo2,
   Users,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
@@ -29,7 +28,6 @@ const LIENS = [
   { to: '/stock', label: 'Stock', icon: Boxes },
   { to: '/vente-directe', label: 'Vente directe', icon: Store },
   { to: '/reservations', label: 'Réservations', icon: CalendarClock },
-  { to: '/retours', label: 'Retours', icon: Undo2 },
   { to: '/encaissement', label: 'Encaissement', icon: CreditCard },
   { to: '/catalogue', label: 'Catalogue', icon: BookOpen },
   { to: '/historique', label: 'Historique', icon: History },

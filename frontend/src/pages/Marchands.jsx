@@ -157,7 +157,7 @@ export default function Marchands() {
               required
             >
               <option value="" disabled>
-                Commercial responsable
+                Personnel responsable
               </option>
               {commerciaux.map((commercial) => (
                 <option key={commercial.id} value={commercial.id}>
@@ -207,7 +207,7 @@ export default function Marchands() {
               <tr className="border-b border-slate-200 text-slate-500">
                 <th className="px-4 py-3 font-medium">Nom</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
-                <th className="px-4 py-3 font-medium">Commercial responsable</th>
+                <th className="px-4 py-3 font-medium">Personnel responsable</th>
                 <th className="px-4 py-3 font-medium">Soldes</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium"></th>

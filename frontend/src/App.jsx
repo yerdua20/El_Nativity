@@ -13,7 +13,6 @@ import Login from './pages/Login'
 import Marchands from './pages/Marchands'
 import Profil from './pages/Profil'
 import Reservations from './pages/Reservations'
-import Retours from './pages/Retours'
 import Stock from './pages/Stock'
 import VenteDirecte from './pages/VenteDirecte'
 
@@ -36,7 +35,6 @@ export default function App() {
           <Route path="/stock" element={protegee(<Stock />)} />
           <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
           <Route path="/reservations" element={protegee(<Reservations />)} />
-          <Route path="/retours" element={protegee(<Retours />)} />
           <Route path="/encaissement" element={protegee(<Encaissement />)} />
           <Route path="/historique" element={protegee(<Historique />)} />
           <Route path="/catalogue" element={protegee(<Catalogue />)} />
