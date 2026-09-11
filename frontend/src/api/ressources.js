@@ -20,6 +20,11 @@ export async function lireStockClient(id) {
   return data
 }
 
+export async function listerStockMarchands() {
+  const { data } = await apiClient.get('/clients/stock-marchandise/')
+  return data
+}
+
 export async function listerCommerciaux() {
   const { data } = await apiClient.get('/commerciaux/')
   return data.results

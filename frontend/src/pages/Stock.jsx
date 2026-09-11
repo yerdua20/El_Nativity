@@ -1,6 +1,12 @@
-import { Boxes, Plus } from 'lucide-react'
+import { Boxes, Plus, Store } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { listerPointsDeVente, listerProduits, listerStockPointsDeVente } from '../api/ressources'
+import { Link } from 'react-router-dom'
+import {
+  listerPointsDeVente,
+  listerProduits,
+  listerStockMarchands,
+  listerStockPointsDeVente,
+} from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
@@ -10,6 +16,7 @@ export default function Stock() {
   const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
   const produits = useRessource(listerProduits, 'cache_produits')
   const [stock, setStock] = useState([])
+  const [stockMarchands, setStockMarchands] = useState(null)
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
 
@@ -21,6 +28,7 @@ export default function Stock() {
 
   function rafraichir() {
     listerStockPointsDeVente().then(setStock)
+    listerStockMarchands().then(setStockMarchands)
   }
 
   useEffect(rafraichir, [])
@@ -61,6 +69,8 @@ export default function Stock() {
         sousTitre="Quantité disponible par point de vente et par produit"
         icone={Boxes}
       />
+
+      <h2 className="mb-3 text-sm font-semibold text-slate-700">Dépôt, Bar, Restaurant...</h2>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="w-full max-w-xs">
@@ -161,6 +171,43 @@ export default function Stock() {
                   <td className="px-4 py-3">{nomsProduits[ligne.produit] ?? ligne.produit}</td>
                   <td className="px-4 py-3 font-medium text-slate-900">{ligne.quantite}</td>
                   <td className="px-4 py-3 text-slate-500">{ligne.quantite_vendue}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <h2 className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <Store className="h-4 w-4" />
+        Marchandise chez les marchands (dépôt-vente)
+      </h2>
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        {!stockMarchands && <p className="p-4 text-sm text-slate-500">Chargement...</p>}
+        {stockMarchands && stockMarchands.length === 0 && (
+          <p className="p-4 text-sm text-slate-500">Aucune marchandise en dépôt-vente pour l'instant.</p>
+        )}
+        {stockMarchands && stockMarchands.length > 0 && (
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200 text-slate-500">
+                <th className="px-4 py-3 font-medium">Marchand</th>
+                <th className="px-4 py-3 font-medium">Produit</th>
+                <th className="px-4 py-3 font-medium">Quantité restante</th>
+                <th className="px-4 py-3 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {stockMarchands.map((ligne) => (
+                <tr key={`${ligne.client}-${ligne.produit}`}>
+                  <td className="px-4 py-3">{ligne.client_nom}</td>
+                  <td className="px-4 py-3">{ligne.produit_nom}</td>
+                  <td className="px-4 py-3 font-medium text-slate-900">{ligne.quantite_restante}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Link to={`/clients/${ligne.client}`} className="text-or-600 underline hover:text-or-700">
+                      Voir la fiche
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
