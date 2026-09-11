@@ -293,6 +293,35 @@ class ClientViewSet(viewsets.ModelViewSet):
         )
         return Response(list(lignes))
 
+    @action(detail=False, methods=["get"], url_path="stock-marchandise")
+    def stock_marchandise(self, request):
+        """
+        Détail par marchand et par produit de la marchandise encore
+        en dépôt-vente, tous marchands confondus (respecte le même
+        périmètre que get_queryset : un non-staff ne voit que les
+        marchands qui lui sont tagués).
+        """
+        clients_visibles = self.get_queryset().filter(mode_vente=Client.ModeVente.DEPOT_VENTE)
+        effets = {
+            MouvementStock.TypeMouvement.DEPOT_CLIENT: 1,
+            MouvementStock.TypeMouvement.VENTE_DECLAREE: -1,
+            MouvementStock.TypeMouvement.RETOUR_CLIENT: -1,
+        }
+        lignes = (
+            MouvementStock.objects.filter(client__in=clients_visibles, type__in=effets)
+            .annotate(
+                effet=Case(
+                    *[When(type=type_, then=Value(mult)) for type_, mult in effets.items()],
+                    output_field=DecimalField(max_digits=12, decimal_places=2),
+                )
+            )
+            .values("client", "produit", client_nom=F("client__nom"), produit_nom=F("produit__nom"))
+            .annotate(quantite_restante=Sum(F("quantite") * F("effet")))
+            .filter(quantite_restante__gt=0)
+            .order_by("client__nom", "produit__nom")
+        )
+        return Response(list(lignes))
+
 
 class MouvementStockViewSet(viewsets.ModelViewSet):
     serializer_class = MouvementStockSerializer
