@@ -70,8 +70,12 @@ class Command(BaseCommand):
             # Personnel de La Nativité : gérant et chargée des ventes,
             # qui n'ont pas de portefeuille propre, juste un tag
             # d'audit sur les dépôts qu'ils enregistrent.
-            gerant = self._creer_commercial(depot, "Koffi", "Amégnran", "90 11 22 33", username="koffi.amegnran")
-            chargee_ventes = self._creer_commercial(depot, "Afiwa", "Dogbe", "91 44 55 66", username="afiwa.dogbe")
+            gerant = self._creer_commercial(
+                depot, "Koffi", "Amégnran", "90 11 22 33", username="koffi.amegnran", role=Commercial.Role.GERANT
+            )
+            chargee_ventes = self._creer_commercial(
+                depot, "Afiwa", "Dogbe", "91 44 55 66", username="afiwa.dogbe", role=Commercial.Role.CHARGE_VENTES
+            )
 
             marchands_gerant = [
                 self._creer_marchand(gerant, "Boutique Bon Prix", "90 12 34 56", "Adidogomé, Lomé"),
@@ -194,7 +198,7 @@ class Command(BaseCommand):
                     defaults={"prix": self._prix_par_produit[cle]},
                 )
 
-    def _creer_commercial(self, depot, prenom, nom, telephone, username):
+    def _creer_commercial(self, depot, prenom, nom, telephone, username, role=Commercial.Role.AUTRE):
         User = get_user_model()
         utilisateur, cree = User.objects.get_or_create(
             username=username, defaults={"first_name": prenom, "last_name": nom}
@@ -207,6 +211,7 @@ class Command(BaseCommand):
             utilisateur=utilisateur,
             defaults={
                 "point_de_vente": depot,
+                "role": role,
                 "nom": nom,
                 "prenom": prenom,
                 "telephone": telephone,

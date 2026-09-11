@@ -170,9 +170,9 @@ _JEUX_EXPORT = {
         ),
     ),
     "commerciaux": (
-        ["Nom", "Prénom", "Téléphone", "Point de vente", "Actif"],
+        ["Nom", "Prénom", "Rôle", "Téléphone", "Point de vente", "Actif"],
         lambda: (
-            [c.nom, c.prenom, c.telephone, str(c.point_de_vente), c.actif]
+            [c.nom, c.prenom, c.get_role_display(), c.telephone, str(c.point_de_vente), c.actif]
             for c in Commercial.objects.select_related("point_de_vente")
         ),
     ),

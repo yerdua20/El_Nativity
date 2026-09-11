@@ -93,6 +93,7 @@ class CommercialSerializer(serializers.ModelSerializer):
             "id",
             "utilisateur",
             "point_de_vente",
+            "role",
             "nom",
             "prenom",
             "telephone",

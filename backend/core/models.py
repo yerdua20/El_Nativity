@@ -186,6 +186,13 @@ class Commercial(models.Model):
     part du dépôt central comme un lot commun.
     """
 
+    class Role(models.TextChoices):
+        PDG = "PDG", "PDG"
+        GERANT = "GERANT", "Gérant"
+        CHARGE_VENTES = "CHARGE_VENTES", "Chargé(e) des ventes"
+        COMPTABLE = "COMPTABLE", "Comptable"
+        AUTRE = "AUTRE", "Autre"
+
     utilisateur = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
@@ -199,6 +206,7 @@ class Commercial(models.Model):
         related_name="commerciaux",
         help_text="Dépôt de rattachement, utilisé pour la tarification.",
     )
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.AUTRE)
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
     telephone = models.CharField(max_length=30, blank=True)

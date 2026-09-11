@@ -46,8 +46,8 @@ class TarifAdmin(admin.ModelAdmin):
 
 @admin.register(Commercial)
 class CommercialAdmin(admin.ModelAdmin):
-    list_display = ("nom", "prenom", "point_de_vente", "actif")
-    list_filter = ("actif", "point_de_vente")
+    list_display = ("nom", "prenom", "role", "point_de_vente", "actif")
+    list_filter = ("actif", "role", "point_de_vente")
     search_fields = ("nom", "prenom", "telephone")
 
 
