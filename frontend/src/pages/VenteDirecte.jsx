@@ -11,11 +11,11 @@ export default function VenteDirecte() {
   const produits = useRessource(listerProduits, 'cache_produits')
   const clients = useRessource(listerClients, 'cache_clients')
 
-  const marchandsCash = useMemo(() => clients.filter((c) => c.mode_vente === 'CASH'), [clients])
+  const clientsCash = useMemo(() => clients.filter((c) => c.mode_vente === 'CASH'), [clients])
 
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [produitId, setProduitId] = useState('')
-  const [marchandId, setMarchandId] = useState('')
+  const [clientId, setClientId] = useState('')
   const [quantite, setQuantite] = useState('')
   const [succes, setSucces] = useState('')
   const [enCours, setEnCours] = useState(false)
@@ -32,7 +32,7 @@ export default function VenteDirecte() {
         produit: produitId,
         quantite,
         point_de_vente: pointDeVenteId,
-        client: marchandId || undefined,
+        client: clientId || undefined,
         date_mouvement: new Date().toISOString(),
       },
     })
@@ -45,13 +45,12 @@ export default function VenteDirecte() {
     <Layout>
       <EnTeteBandeau
         titre="Vente directe"
-        sousTitre="Vente comptant au bar, au restaurant ou au dépôt (marchand cash)"
+        sousTitre="Vente comptant au bar, au restaurant ou au dépôt"
         icone={Store}
       />
       <p className="mb-4 text-sm text-slate-500">
-        Vente payée immédiatement : aucun solde client ou commercial n'est modifié. Pour un
-        marchand qui achète cash au dépôt, sélectionne-le pour garder une trace de son historique
-        d'achats.
+        Vente payée immédiatement : aucun solde n'est modifié. Pour un client qui achète cash au
+        dépôt, sélectionne-le pour garder une trace de son historique d'achats.
       </p>
 
       <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
@@ -76,18 +75,16 @@ export default function VenteDirecte() {
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Marchand (facultatif)
-            </label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">Client (facultatif)</label>
             <select
               className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-              value={marchandId}
-              onChange={(event) => setMarchandId(event.target.value)}
+              value={clientId}
+              onChange={(event) => setClientId(event.target.value)}
             >
               <option value="">Client de passage (anonyme)</option>
-              {marchandsCash.map((marchand) => (
-                <option key={marchand.id} value={marchand.id}>
-                  {marchand.nom}
+              {clientsCash.map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.nom}
                 </option>
               ))}
             </select>
