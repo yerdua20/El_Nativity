@@ -14,7 +14,6 @@ import Login from './pages/Login'
 import Marchands from './pages/Marchands'
 import NouveauDepot from './pages/NouveauDepot'
 import Profil from './pages/Profil'
-import ReceptionStock from './pages/ReceptionStock'
 import Reservations from './pages/Reservations'
 import Retours from './pages/Retours'
 import Stock from './pages/Stock'
@@ -39,7 +38,6 @@ export default function App() {
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
           <Route path="/commerciaux/:id" element={protegee(<FicheCommercial />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
-          <Route path="/reception-stock" element={protegee(<ReceptionStock />)} />
           <Route path="/stock" element={protegee(<Stock />)} />
           <Route path="/vente" element={protegee(<VenteDeclaree />)} />
           <Route path="/vente-directe" element={protegee(<VenteDirecte />)} />
