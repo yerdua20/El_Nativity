@@ -1,4 +1,4 @@
-import { Plus, Search, Users } from 'lucide-react'
+import { MapPin, Plus, Search, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { creerClient, listerClients, listerCommerciaux } from '../api/ressources'
@@ -19,9 +19,13 @@ export default function Clients() {
   const [recherche, setRecherche] = useState('')
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
 
+  const [modeVente, setModeVente] = useState('DEPOT_VENTE')
   const [nom, setNom] = useState('')
   const [telephone, setTelephone] = useState('')
+  const [adresse, setAdresse] = useState('')
   const [commercialId, setCommercialId] = useState('')
+  const [position, setPosition] = useState(null)
+  const [statutGps, setStatutGps] = useState('en_attente')
   const [erreur, setErreur] = useState('')
   const [enCours, setEnCours] = useState(false)
 
@@ -51,14 +55,39 @@ export default function Clients() {
     return clients.filter((c) => c.nom.toLowerCase().includes(terme))
   }, [clients, recherche])
 
+  function capturerPosition() {
+    if (!navigator.geolocation) {
+      setStatutGps('indisponible')
+      return
+    }
+    setStatutGps('en_cours')
+    navigator.geolocation.getCurrentPosition(
+      (resultat) => {
+        setPosition({ latitude: resultat.coords.latitude, longitude: resultat.coords.longitude })
+        setStatutGps('capturee')
+      },
+      () => setStatutGps('refusee'),
+      { enableHighAccuracy: true, timeout: 10000 },
+    )
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setErreur('')
     setEnCours(true)
     try {
-      await creerClient({ nom, telephone, commercial: Number(commercialId) })
+      const payload = { mode_vente: modeVente, nom, telephone, adresse }
+      if (modeVente === 'DEPOT_VENTE') payload.commercial = Number(commercialId)
+      if (position) {
+        payload.latitude = position.latitude
+        payload.longitude = position.longitude
+      }
+      await creerClient(payload)
       setNom('')
       setTelephone('')
+      setAdresse('')
+      setPosition(null)
+      setStatutGps('en_attente')
       setFormulaireOuvert(false)
       rafraichirClients()
     } catch {
@@ -92,43 +121,87 @@ export default function Clients() {
       </div>
 
       {formulaireOuvert && (
-        <form onSubmit={handleSubmit} className="mb-6 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-4">
-          <input
-            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-            placeholder="Nom"
-            value={nom}
-            onChange={(event) => setNom(event.target.value)}
-            required
-          />
-          <input
-            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-            placeholder="Téléphone"
-            value={telephone}
-            onChange={(event) => setTelephone(event.target.value)}
-          />
-          <select
-            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-            value={commercialId}
-            onChange={(event) => setCommercialId(event.target.value)}
-            required
-          >
-            <option value="" disabled>
-              Commercial
-            </option>
-            {commerciaux.map((commercial) => (
-              <option key={commercial.id} value={commercial.id}>
-                {commercial.prenom} {commercial.nom}
-              </option>
-            ))}
-          </select>
+        <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
+          <div className="mb-3 flex gap-4 text-sm">
+            <label className="flex items-center gap-1.5">
+              <input
+                type="radio"
+                checked={modeVente === 'DEPOT_VENTE'}
+                onChange={() => setModeVente('DEPOT_VENTE')}
+              />
+              Dépôt-vente (via un commercial)
+            </label>
+            <label className="flex items-center gap-1.5">
+              <input type="radio" checked={modeVente === 'CASH'} onChange={() => setModeVente('CASH')} />
+              Cash (paiement comptant au dépôt)
+            </label>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
+            <input
+              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              placeholder="Nom / boutique"
+              value={nom}
+              onChange={(event) => setNom(event.target.value)}
+              required
+            />
+            <input
+              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              placeholder="Téléphone"
+              value={telephone}
+              onChange={(event) => setTelephone(event.target.value)}
+            />
+            <input
+              className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              placeholder="Adresse"
+              value={adresse}
+              onChange={(event) => setAdresse(event.target.value)}
+            />
+            {modeVente === 'DEPOT_VENTE' && (
+              <select
+                className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                value={commercialId}
+                onChange={(event) => setCommercialId(event.target.value)}
+                required
+              >
+                <option value="" disabled>
+                  Commercial
+                </option>
+                {commerciaux.map((commercial) => (
+                  <option key={commercial.id} value={commercial.id}>
+                    {commercial.prenom} {commercial.nom}
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          <div className="mt-3 flex items-center gap-2 text-sm">
+            <MapPin className="h-4 w-4 text-slate-400" />
+            {statutGps === 'en_attente' && <span className="text-slate-500">Position non capturée</span>}
+            {statutGps === 'en_cours' && <span className="text-slate-500">capture en cours...</span>}
+            {statutGps === 'capturee' && position && (
+              <span className="text-green-600">
+                {position.latitude.toFixed(5)}, {position.longitude.toFixed(5)}
+              </span>
+            )}
+            {statutGps === 'refusee' && <span className="text-amber-600">refusée par le navigateur</span>}
+            {statutGps === 'indisponible' && <span className="text-amber-600">non disponible</span>}
+            {statutGps !== 'en_cours' && (
+              <button type="button" onClick={capturerPosition} className="text-or-600 underline hover:text-or-700">
+                {statutGps === 'en_attente' ? 'capturer' : 'réessayer'}
+              </button>
+            )}
+          </div>
+
+          {erreur && <p className="mt-3 text-sm text-red-600">{erreur}</p>}
           <button
             type="submit"
             disabled={enCours}
-            className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+            className="mt-3 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-50"
           >
             {enCours ? 'Création...' : 'Créer'}
           </button>
-          {erreur && <p className="text-sm text-red-600 sm:col-span-4">{erreur}</p>}
         </form>
       )}
 
@@ -142,6 +215,7 @@ export default function Clients() {
             <thead>
               <tr className="border-b border-slate-200 text-slate-500">
                 <th className="px-4 py-3 font-medium">Nom</th>
+                <th className="px-4 py-3 font-medium">Mode</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
                 <th className="px-4 py-3 font-medium">Commercial</th>
                 <th className="px-4 py-3 font-medium">Soldes</th>
@@ -158,10 +232,21 @@ export default function Clients() {
                       {client.nom}
                     </div>
                   </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${
+                        client.mode_vente === 'CASH' ? 'bg-slate-100 text-slate-600' : 'bg-or-100 text-or-700'
+                      }`}
+                    >
+                      {client.mode_vente === 'CASH' ? 'Cash' : 'Dépôt-vente'}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-slate-500">{client.telephone || '—'}</td>
                   <td className="px-4 py-3 text-slate-500">{nomsCommerciaux[client.commercial] ?? '—'}</td>
                   <td className="px-4 py-3 text-slate-500">
-                    Marchandise : {client.solde_marchandise} · Financier : {client.solde_financier}
+                    {client.mode_vente === 'CASH'
+                      ? '—'
+                      : `Marchandise : ${client.solde_marchandise} · Financier : ${client.solde_financier}`}
                   </td>
                   <td className="px-4 py-3">
                     <span

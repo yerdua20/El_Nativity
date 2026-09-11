@@ -1,6 +1,6 @@
 import { Store } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { listerPointsDeVente, listerProduits } from '../api/ressources'
+import { listerClients, listerPointsDeVente, listerProduits } from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
@@ -9,14 +9,13 @@ import { mettreEnFile } from '../offline/sync'
 export default function VenteDirecte() {
   const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
   const produits = useRessource(listerProduits, 'cache_produits')
+  const clients = useRessource(listerClients, 'cache_clients')
 
-  const pointsDeVenteVente = useMemo(
-    () => pointsDeVente.filter((pdv) => pdv.type_pdv === 'BAR' || pdv.type_pdv === 'RESTAURANT'),
-    [pointsDeVente],
-  )
+  const marchandsCash = useMemo(() => clients.filter((c) => c.mode_vente === 'CASH'), [clients])
 
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [produitId, setProduitId] = useState('')
+  const [marchandId, setMarchandId] = useState('')
   const [quantite, setQuantite] = useState('')
   const [succes, setSucces] = useState('')
   const [enCours, setEnCours] = useState(false)
@@ -33,6 +32,7 @@ export default function VenteDirecte() {
         produit: produitId,
         quantite,
         point_de_vente: pointDeVenteId,
+        client: marchandId || undefined,
         date_mouvement: new Date().toISOString(),
       },
     })
@@ -45,12 +45,13 @@ export default function VenteDirecte() {
     <Layout>
       <EnTeteBandeau
         titre="Vente directe"
-        sousTitre="Enregistrer une vente sur place au bar ou au restaurant"
+        sousTitre="Vente comptant au bar, au restaurant ou au dépôt (marchand cash)"
         icone={Store}
       />
       <p className="mb-4 text-sm text-slate-500">
-        Vente à un client de passage, sans dépôt-vente : aucun solde client ou commercial n'est
-        modifié.
+        Vente payée immédiatement : aucun solde client ou commercial n'est modifié. Pour un
+        marchand qui achète cash au dépôt, sélectionne-le pour garder une trace de son historique
+        d'achats.
       </p>
 
       <form onSubmit={handleSubmit} className="rounded-lg border border-slate-200 bg-white p-6">
@@ -66,9 +67,27 @@ export default function VenteDirecte() {
               <option value="" disabled>
                 Choisir un point de vente
               </option>
-              {pointsDeVenteVente.map((pdv) => (
+              {pointsDeVente.map((pdv) => (
                 <option key={pdv.id} value={pdv.id}>
                   {pdv.nom}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Marchand (facultatif)
+            </label>
+            <select
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+              value={marchandId}
+              onChange={(event) => setMarchandId(event.target.value)}
+            >
+              <option value="">Client de passage (anonyme)</option>
+              {marchandsCash.map((marchand) => (
+                <option key={marchand.id} value={marchand.id}>
+                  {marchand.nom}
                 </option>
               ))}
             </select>

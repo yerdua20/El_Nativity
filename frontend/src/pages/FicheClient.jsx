@@ -42,36 +42,47 @@ export default function FicheClient() {
         icone={User}
       />
 
-      <div className="mb-8 grid grid-cols-2 gap-4">
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-500">Solde marchandise</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{client.solde_marchandise}</p>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-500">Solde financier</p>
-          <p className="mt-1 text-2xl font-semibold text-slate-900">{client.solde_financier}</p>
-        </div>
-      </div>
+      {client.mode_vente === 'CASH' ? (
+        <p className="mb-8 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          Client cash : paiement comptant à chaque achat, aucun solde à suivre dans le temps. Voir
+          l'historique de ses achats ci-dessous.
+        </p>
+      ) : (
+        <>
+          <div className="mb-8 grid grid-cols-2 gap-4">
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <p className="text-sm text-slate-500">Solde marchandise</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{client.solde_marchandise}</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <p className="text-sm text-slate-500">Solde financier</p>
+              <p className="mt-1 text-2xl font-semibold text-slate-900">{client.solde_financier}</p>
+            </div>
+          </div>
+
+          <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
+            <h2 className="mb-3 text-sm font-semibold text-slate-700">Marchandise détenue par produit</h2>
+            {stockDetail.length === 0 && (
+              <p className="text-sm text-slate-500">Aucune marchandise en cours chez ce client.</p>
+            )}
+            {stockDetail.length > 0 && (
+              <ul className="divide-y divide-slate-100 text-sm">
+                {stockDetail.map((ligne) => (
+                  <li key={ligne.produit} className="flex justify-between py-2">
+                    <span>{ligne.produit_nom}</span>
+                    <span className="font-medium text-slate-900">{ligne.quantite_restante}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
 
       <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Marchandise détenue par produit</h2>
-        {stockDetail.length === 0 && (
-          <p className="text-sm text-slate-500">Aucune marchandise en cours chez ce client.</p>
-        )}
-        {stockDetail.length > 0 && (
-          <ul className="divide-y divide-slate-100 text-sm">
-            {stockDetail.map((ligne) => (
-              <li key={ligne.produit} className="flex justify-between py-2">
-                <span>{ligne.produit_nom}</span>
-                <span className="font-medium text-slate-900">{ligne.quantite_restante}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-
-      <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Mouvements de stock</h2>
+        <h2 className="mb-3 text-sm font-semibold text-slate-700">
+          {client.mode_vente === 'CASH' ? 'Historique des achats' : 'Mouvements de stock'}
+        </h2>
         {mouvements.length === 0 && <p className="text-sm text-slate-500">Aucun mouvement.</p>}
         {mouvements.length > 0 && (
           <ul className="divide-y divide-slate-100 text-sm">
@@ -88,24 +99,26 @@ export default function FicheClient() {
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-3 text-sm font-semibold text-slate-700">Encaissements</h2>
-        {encaissements.length === 0 && <p className="text-sm text-slate-500">Aucun encaissement.</p>}
-        {encaissements.length > 0 && (
-          <ul className="divide-y divide-slate-100 text-sm">
-            {encaissements.map((encaissement) => (
-              <li key={encaissement.id} className="flex justify-between py-2">
-                <span>
-                  {encaissement.montant} ({encaissement.moyen_paiement})
-                </span>
-                <span className="text-slate-500">
-                  {new Date(encaissement.date_encaissement).toLocaleDateString('fr-FR')}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      {client.mode_vente !== 'CASH' && (
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="mb-3 text-sm font-semibold text-slate-700">Encaissements</h2>
+          {encaissements.length === 0 && <p className="text-sm text-slate-500">Aucun encaissement.</p>}
+          {encaissements.length > 0 && (
+            <ul className="divide-y divide-slate-100 text-sm">
+              {encaissements.map((encaissement) => (
+                <li key={encaissement.id} className="flex justify-between py-2">
+                  <span>
+                    {encaissement.montant} ({encaissement.moyen_paiement})
+                  </span>
+                  <span className="text-slate-500">
+                    {new Date(encaissement.date_encaissement).toLocaleDateString('fr-FR')}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </Layout>
   )
 }

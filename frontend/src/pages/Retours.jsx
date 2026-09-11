@@ -76,7 +76,7 @@ export default function Retours() {
                 <option value="" disabled>
                   Choisir un client
                 </option>
-                {clients.map((client) => (
+                {clients.filter((client) => client.mode_vente !== 'CASH').map((client) => (
                   <option key={client.id} value={client.id}>
                     {client.nom}
                   </option>
