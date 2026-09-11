@@ -25,6 +25,11 @@ export async function listerCommerciaux() {
   return data.results
 }
 
+export async function lireCommercial(id) {
+  const { data } = await apiClient.get(`/commerciaux/${id}/`)
+  return data
+}
+
 export async function creerCommercial(payload) {
   const { data } = await apiClient.post('/commerciaux/', payload)
   return data

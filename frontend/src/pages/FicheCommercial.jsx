@@ -1,7 +1,7 @@
-import { MapPin, Plus, Search, Store } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { creerClient, listerClients } from '../api/ressources'
+import { Briefcase, MapPin, Plus } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { creerClient, lireCommercial, listerClients } from '../api/ressources'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 
@@ -13,9 +13,10 @@ function Avatar({ nom }) {
   )
 }
 
-export default function Clients() {
-  const [clients, setClients] = useState(null)
-  const [recherche, setRecherche] = useState('')
+export default function FicheCommercial() {
+  const { id } = useParams()
+  const [commercial, setCommercial] = useState(null)
+  const [clients, setClients] = useState([])
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
 
   const [nom, setNom] = useState('')
@@ -26,20 +27,14 @@ export default function Clients() {
   const [erreur, setErreur] = useState('')
   const [enCours, setEnCours] = useState(false)
 
-  function rafraichirClients() {
-    listerClients()
-      .then((liste) => setClients(liste.filter((c) => c.mode_vente === 'CASH')))
-      .catch(() => setErreur('Impossible de charger les marchands.'))
+  function rafraichir() {
+    lireCommercial(id).then(setCommercial)
+    listerClients().then((liste) =>
+      setClients(liste.filter((c) => String(c.commercial) === id && c.mode_vente !== 'CASH')),
+    )
   }
 
-  useEffect(rafraichirClients, [])
-
-  const clientsFiltres = useMemo(() => {
-    if (!clients) return null
-    const terme = recherche.trim().toLowerCase()
-    if (!terme) return clients
-    return clients.filter((c) => c.nom.toLowerCase().includes(terme))
-  }, [clients, recherche])
+  useEffect(rafraichir, [id])
 
   function capturerPosition() {
     if (!navigator.geolocation) {
@@ -62,7 +57,7 @@ export default function Clients() {
     setErreur('')
     setEnCours(true)
     try {
-      const payload = { mode_vente: 'CASH', nom, telephone, adresse }
+      const payload = { mode_vente: 'DEPOT_VENTE', commercial: Number(id), nom, telephone, adresse }
       if (position) {
         payload.latitude = position.latitude
         payload.longitude = position.longitude
@@ -74,38 +69,53 @@ export default function Clients() {
       setPosition(null)
       setStatutGps('en_attente')
       setFormulaireOuvert(false)
-      rafraichirClients()
+      rafraichir()
     } catch {
-      setErreur('Impossible de créer ce marchand.')
+      setErreur('Impossible de créer ce client.')
     } finally {
       setEnCours(false)
     }
   }
 
+  if (!commercial) {
+    return (
+      <Layout>
+        <p className="text-sm text-slate-500">Chargement...</p>
+      </Layout>
+    )
+  }
+
   return (
     <Layout>
+      <Link to="/commerciaux" className="mb-4 inline-block text-sm text-slate-500 underline hover:text-slate-700">
+        ← Retour aux commerciaux
+      </Link>
+
       <EnTeteBandeau
-        titre="Marchands"
-        sousTitre="Clients qui paient comptant au dépôt (sans dépôt-vente)"
-        icone={Store}
+        titre={`${commercial.prenom} ${commercial.nom}`}
+        sousTitre={commercial.telephone || 'Aucun téléphone renseigné'}
+        icone={Briefcase}
       />
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            className="w-full rounded border border-slate-300 py-2 pr-3 pl-9 text-sm focus:border-or-400 focus:outline-none"
-            placeholder="Rechercher un marchand..."
-            value={recherche}
-            onChange={(event) => setRecherche(event.target.value)}
-          />
+      <div className="mb-8 grid grid-cols-2 gap-4">
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-sm text-slate-500">Solde marchandise</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{commercial.solde_marchandise}</p>
         </div>
+        <div className="rounded-lg border border-slate-200 bg-white p-4">
+          <p className="text-sm text-slate-500">Solde financier</p>
+          <p className="mt-1 text-2xl font-semibold text-slate-900">{commercial.solde_financier}</p>
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-slate-700">Ses clients en dépôt-vente</h2>
         <button
           onClick={() => setFormulaireOuvert((v) => !v)}
           className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
         >
           <Plus className="h-4 w-4" />
-          Nouveau marchand
+          Nouveau client
         </button>
       </div>
 
@@ -163,23 +173,20 @@ export default function Clients() {
       )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        {!clientsFiltres && <p className="p-4 text-sm text-slate-500">Chargement...</p>}
-        {clientsFiltres && clientsFiltres.length === 0 && (
-          <p className="p-4 text-sm text-slate-500">Aucun marchand trouvé.</p>
-        )}
-        {clientsFiltres && clientsFiltres.length > 0 && (
+        {clients.length === 0 && <p className="p-4 text-sm text-slate-500">Aucun client pour l'instant.</p>}
+        {clients.length > 0 && (
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-slate-500">
                 <th className="px-4 py-3 font-medium">Nom</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
-                <th className="px-4 py-3 font-medium">Adresse</th>
+                <th className="px-4 py-3 font-medium">Soldes</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {clientsFiltres.map((client) => (
+              {clients.map((client) => (
                 <tr key={client.id}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
@@ -188,7 +195,9 @@ export default function Clients() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-slate-500">{client.telephone || '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{client.adresse || '—'}</td>
+                  <td className="px-4 py-3 text-slate-500">
+                    Marchandise : {client.solde_marchandise} · Financier : {client.solde_financier}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`rounded-full px-2 py-1 text-xs font-medium ${

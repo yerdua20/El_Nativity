@@ -9,6 +9,7 @@ import Commerciaux from './pages/Commerciaux'
 import Dashboard from './pages/Dashboard'
 import Encaissement from './pages/Encaissement'
 import FicheClient from './pages/FicheClient'
+import FicheCommercial from './pages/FicheCommercial'
 import Historique from './pages/Historique'
 import Login from './pages/Login'
 import NouveauDepot from './pages/NouveauDepot'
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/clients/:id" element={protegee(<FicheClient />)} />
           <Route path="/carte" element={protegee(<Carte />)} />
           <Route path="/commerciaux" element={protegee(<Commerciaux />)} />
+          <Route path="/commerciaux/:id" element={protegee(<FicheCommercial />)} />
           <Route path="/depot" element={protegee(<NouveauDepot />)} />
           <Route path="/reception-stock" element={protegee(<ReceptionStock />)} />
           <Route path="/stock" element={protegee(<Stock />)} />
