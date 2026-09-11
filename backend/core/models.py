@@ -221,10 +221,32 @@ class Commercial(models.Model):
 
 
 class Client(models.Model):
-    """Un client recevant de la marchandise en dépôt-vente d'un commercial."""
+    """
+    Un client, selon deux circuits distincts (voir `mode_vente`) :
 
+    - DEPOT_VENTE : un commercial lui confie de la marchandise sans
+      paiement immédiat (dépôt-vente classique). Les soldes
+      marchandise/financier ci-dessous suivent ce qu'il doit encore.
+    - CASH : un marchand qui achète et paie comptant directement
+      au dépôt, sans commercial intermédiaire. Rien à suivre dans le
+      temps pour lui : les soldes restent à zéro, on garde juste sa
+      fiche (coordonnées, localisation) et l'historique de ses achats.
+    """
+
+    class ModeVente(models.TextChoices):
+        DEPOT_VENTE = "DEPOT_VENTE", "Dépôt-vente"
+        CASH = "CASH", "Cash"
+
+    mode_vente = models.CharField(
+        max_length=20, choices=ModeVente.choices, default=ModeVente.DEPOT_VENTE
+    )
     commercial = models.ForeignKey(
-        Commercial, on_delete=models.PROTECT, related_name="clients"
+        Commercial,
+        on_delete=models.PROTECT,
+        related_name="clients",
+        null=True,
+        blank=True,
+        help_text="Obligatoire en dépôt-vente ; sans objet pour un client cash.",
     )
     nom = models.CharField(max_length=150)
     telephone = models.CharField(max_length=30, blank=True)

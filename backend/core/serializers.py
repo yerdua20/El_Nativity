@@ -117,6 +117,7 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = [
             "id",
+            "mode_vente",
             "commercial",
             "nom",
             "telephone",
@@ -137,6 +138,8 @@ class ClientSerializer(serializers.ModelSerializer):
         ]
 
     def validate_commercial(self, commercial):
+        if commercial is None:
+            return commercial
         request = self.context["request"]
         if not request.user.is_staff:
             proprietaire = commercial_de(request)
@@ -145,6 +148,15 @@ class ClientSerializer(serializers.ModelSerializer):
                     "Vous ne pouvez créer un client que pour vous-même."
                 )
         return commercial
+
+    def validate(self, attrs):
+        mode_vente = attrs.get("mode_vente", getattr(self.instance, "mode_vente", Client.ModeVente.DEPOT_VENTE))
+        commercial = attrs.get("commercial", getattr(self.instance, "commercial", None))
+        if mode_vente == Client.ModeVente.DEPOT_VENTE and commercial is None:
+            raise serializers.ValidationError(
+                {"commercial": "Obligatoire pour un client en dépôt-vente."}
+            )
+        return attrs
 
 
 class MouvementStockSerializer(serializers.ModelSerializer):
@@ -175,10 +187,25 @@ class MouvementStockSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         request = self.context["request"]
+        type_ = attrs.get("type", getattr(self.instance, "type", None))
+        client = attrs.get("client")
+
+        if client is not None:
+            if (
+                type_ in ("DEPOT_CLIENT", "VENTE_DECLAREE", "RETOUR_CLIENT")
+                and client.mode_vente != Client.ModeVente.DEPOT_VENTE
+            ):
+                raise serializers.ValidationError(
+                    {"client": "Ce type de mouvement n'est possible qu'avec un client en dépôt-vente."}
+                )
+            if type_ == "VENTE_DIRECTE" and client.mode_vente != Client.ModeVente.CASH:
+                raise serializers.ValidationError(
+                    {"client": "Une vente directe ne peut être associée qu'à un client cash."}
+                )
+
         if not request.user.is_staff:
             proprietaire = commercial_de(request)
             commercial = attrs.get("commercial")
-            client = attrs.get("client")
             if commercial is not None and (proprietaire is None or commercial.pk != proprietaire.pk):
                 raise serializers.ValidationError(
                     "Vous ne pouvez saisir un mouvement que sur votre propre portefeuille."

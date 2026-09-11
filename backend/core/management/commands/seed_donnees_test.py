@@ -25,6 +25,7 @@ from core.services import enregistrer_encaissement, enregistrer_mouvement_stock
 NOMS_POINTS_DE_VENTE = ["Dépôt Central Lomé", "Bar La Nativité - Agoè", "Restaurant La Nativité"]
 REFERENCES_PRODUITS = ["BIERE-AWO-CASIER", "SODA-COCA-33", "EAU-MIN-15L", "MENU-POULET", "MENU-POISSON"]
 USERNAMES_COMMERCIAUX = ["koffi.amegnran", "afiwa.dogbe"]
+NOMS_MARCHANDS_CASH = ["Boutique Bella"]
 
 
 class Command(BaseCommand):
@@ -124,6 +125,19 @@ class Command(BaseCommand):
             self._vendre_directement(bar, produits["biere"], Decimal("3"), maintenant)
             self._vendre_directement(restaurant, produits["menu_poulet"], Decimal("4"), maintenant)
             self._vendre_directement(restaurant, produits["menu_poisson"], Decimal("2"), maintenant)
+
+            # Marchand cash (Circuit 1) : achète et paie comptant au dépôt,
+            # aucun solde à suivre pour lui, juste sa fiche et son historique.
+            marchand_bella = self._creer_marchand_cash(
+                "Boutique Bella", "90 44 33 22", "Marché d'Adawlato, Lomé",
+                latitude=Decimal("6.135831"), longitude=Decimal("1.222273"),
+            )
+            self._vendre_directement(
+                depot, produits["biere"], Decimal("6"), maintenant - timedelta(days=6), client=marchand_bella
+            )
+            self._vendre_directement(
+                depot, produits["eau"], Decimal("10"), maintenant, client=marchand_bella
+            )
 
             # Réservations de places de fête.
             self._reserver(bar, "Kodjo Mensah", "90 99 88 77", "Anniversaire", 8, maintenant + timedelta(days=2))
@@ -278,16 +292,30 @@ class Command(BaseCommand):
             commentaire="Réception de test",
         )
 
-    def _vendre_directement(self, point_de_vente, produit, quantite, date):
+    def _vendre_directement(self, point_de_vente, produit, quantite, date, client=None):
         enregistrer_mouvement_stock(
             uuid=uuid.uuid4(),
             type="VENTE_DIRECTE",
             produit=produit,
             quantite=quantite,
             point_de_vente=point_de_vente,
+            client=client,
             date_mouvement=date,
             commentaire="Vente directe de test",
         )
+
+    def _creer_marchand_cash(self, nom, telephone, adresse, latitude=None, longitude=None):
+        marchand, _ = Client.objects.get_or_create(
+            nom=nom,
+            mode_vente=Client.ModeVente.CASH,
+            defaults={
+                "telephone": telephone,
+                "adresse": adresse,
+                "latitude": latitude,
+                "longitude": longitude,
+            },
+        )
+        return marchand
 
     def _reserver(self, point_de_vente, nom_client, telephone_client, type_evenement, nombre_personnes, date, statut=Reservation.Statut.CONFIRMEE):
         Reservation.objects.get_or_create(
@@ -325,7 +353,10 @@ class Command(BaseCommand):
         Reservation.objects.filter(point_de_vente__nom__in=NOMS_POINTS_DE_VENTE).delete()
         StockPointDeVente.objects.filter(point_de_vente__nom__in=NOMS_POINTS_DE_VENTE).delete()
 
-        Client.objects.filter(commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX).delete()
+        Client.objects.filter(
+            Q(commercial__utilisateur__username__in=USERNAMES_COMMERCIAUX)
+            | Q(nom__in=NOMS_MARCHANDS_CASH)
+        ).delete()
         Commercial.objects.filter(utilisateur__username__in=USERNAMES_COMMERCIAUX).delete()
         User.objects.filter(username__in=USERNAMES_COMMERCIAUX).delete()
 
