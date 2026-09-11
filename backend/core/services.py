@@ -9,6 +9,8 @@ l'écriture et la mise à jour des soldes/stock se font dans une seule
 transaction atomique, avec F() pour éviter les conditions de course.
 """
 
+from decimal import Decimal
+
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
@@ -152,6 +154,8 @@ def enregistrer_encaissement(
     uuid,
     client,
     montant,
+    montant_recu=None,
+    monnaie_rendue=Decimal("0"),
     moyen_paiement=Encaissement.MoyenPaiement.ESPECES,
     collecte_par=None,
     date_encaissement=None,
@@ -164,7 +168,9 @@ def enregistrer_encaissement(
     Idempotent sur `uuid`, pour les mêmes raisons que
     enregistrer_mouvement_stock. `collecte_par` est un simple tag
     d'audit (qui a physiquement collecté l'argent) : le commercial
-    n'a pas de solde propre à ajuster.
+    n'a pas de solde propre à ajuster. `montant` est le montant net
+    (ce qui diminue réellement le solde) ; montant_recu/monnaie_rendue
+    ne sont conservés que pour la traçabilité de la transaction cash.
     """
 
     existant = Encaissement.objects.filter(uuid=uuid).first()
@@ -176,6 +182,8 @@ def enregistrer_encaissement(
         client=client,
         collecte_par=collecte_par,
         montant=montant,
+        montant_recu=montant_recu,
+        monnaie_rendue=monnaie_rendue,
         moyen_paiement=moyen_paiement,
         date_encaissement=date_encaissement or timezone.now(),
         commentaire=commentaire,

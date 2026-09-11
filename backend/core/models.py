@@ -414,7 +414,23 @@ class Encaissement(models.Model):
         related_name="encaissements_collectes",
     )
     montant = models.DecimalField(
-        max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))]
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal("0.01"))],
+        help_text="Montant net qui diminue le solde financier (montant_recu - monnaie_rendue).",
+    )
+    montant_recu = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Montant brut physiquement remis par le marchand, avant rendu de monnaie.",
+    )
+    monnaie_rendue = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal("0"),
+        help_text="Monnaie rendue au marchand sur le montant reçu.",
     )
     moyen_paiement = models.CharField(
         max_length=20, choices=MoyenPaiement.choices, default=MoyenPaiement.ESPECES

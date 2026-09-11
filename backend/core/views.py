@@ -193,9 +193,17 @@ _JEUX_EXPORT = {
         ),
     ),
     "encaissements": (
-        ["Date", "Client", "Montant", "Moyen de paiement", "Collecté par"],
+        ["Date", "Client", "Montant", "Montant reçu", "Monnaie rendue", "Moyen de paiement", "Collecté par"],
         lambda: (
-            [e.date_encaissement, str(e.client), e.montant, e.get_moyen_paiement_display(), str(e.collecte_par or "")]
+            [
+                e.date_encaissement,
+                str(e.client),
+                e.montant,
+                e.montant_recu,
+                e.monnaie_rendue,
+                e.get_moyen_paiement_display(),
+                str(e.collecte_par or ""),
+            ]
             for e in Encaissement.objects.select_related("client", "collecte_par")
         ),
     ),

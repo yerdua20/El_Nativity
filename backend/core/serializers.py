@@ -228,6 +228,8 @@ class EncaissementSerializer(serializers.ModelSerializer):
             "client",
             "collecte_par",
             "montant",
+            "montant_recu",
+            "monnaie_rendue",
             "moyen_paiement",
             "date_encaissement",
             "commentaire",
