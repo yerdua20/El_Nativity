@@ -21,7 +21,7 @@ import { useFileAttente } from '../offline/useFileAttente'
 const LIENS = [
   { to: '/', label: 'Tableau de bord', end: true, icon: Home },
   { to: '/clients', label: 'Clients', icon: Users },
-  { to: '/marchands', label: 'Points de dépôt-vente', icon: Store },
+  { to: '/marchands', label: 'Marchands', icon: Store },
   { to: '/carte', label: 'Carte', icon: MapPin },
   { to: '/commerciaux', label: 'Personnels', icon: Briefcase },
   { to: '/stock', label: 'Stock', icon: Boxes },

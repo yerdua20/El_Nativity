@@ -22,7 +22,7 @@ import {
 import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
-  { to: '/marchands', titre: 'Points de dépôt-vente', description: 'Soldes, dépôts, ventes déclarées et retours par marchand', icon: Store },
+  { to: '/marchands', titre: 'Marchands', description: 'Soldes, dépôts, ventes déclarées et retours par marchand', icon: Store },
   { to: '/clients', titre: 'Clients', description: 'Clients qui commandent et paient comptant', icon: Users },
   { to: '/historique', titre: 'Historique', description: 'Mouvements et encaissements récents', icon: History },
 ]
@@ -197,7 +197,7 @@ export default function Dashboard() {
       </div>
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <StatTile label="Points de dépôt-vente" value={marchands ? marchands.length : '…'} icon={Users} tonalite="or" />
+        <StatTile label="Marchands" value={marchands ? marchands.length : '…'} icon={Users} tonalite="or" />
         <StatTile
           label="Personnels actifs"
           value={commerciaux ? commerciauxActifs : '…'}

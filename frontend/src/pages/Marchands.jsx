@@ -104,7 +104,7 @@ export default function Marchands() {
   return (
     <Layout>
       <EnTeteBandeau
-        titre="Points de dépôt-vente"
+        titre="Marchands"
         sousTitre="Boutiques en dépôt-vente : marchandise confiée, à rendre compte"
         icone={Store}
       />
