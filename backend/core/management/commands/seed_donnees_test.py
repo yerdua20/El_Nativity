@@ -78,13 +78,28 @@ class Command(BaseCommand):
             )
 
             marchands_gerant = [
-                self._creer_marchand(gerant, "Boutique Bon Prix", "90 12 34 56", "Adidogomé, Lomé"),
-                self._creer_marchand(gerant, "Alimentation Grâce", "90 65 43 21", "Agbalépédogan, Lomé"),
-                self._creer_marchand(gerant, "Kiosque Espoir", "90 77 88 99", "Bè, Lomé"),
+                self._creer_marchand(
+                    gerant, "Boutique Bon Prix", "90 12 34 56", "Adidogomé, Lomé",
+                    latitude=Decimal("6.176389"), longitude=Decimal("1.202778"),
+                ),
+                self._creer_marchand(
+                    gerant, "Alimentation Grâce", "90 65 43 21", "Agbalépédogan, Lomé",
+                    latitude=Decimal("6.157"), longitude=Decimal("1.1975"),
+                ),
+                self._creer_marchand(
+                    gerant, "Kiosque Espoir", "90 77 88 99", "Bè, Lomé",
+                    latitude=Decimal("6.1225"), longitude=Decimal("1.2394"),
+                ),
             ]
             marchands_chargee = [
-                self._creer_marchand(chargee_ventes, "Supérette Aïda", "91 22 33 44", "Tokoin, Lomé"),
-                self._creer_marchand(chargee_ventes, "Dépôt Faveur", "91 55 66 77", "Hédzranawoé, Lomé"),
+                self._creer_marchand(
+                    chargee_ventes, "Supérette Aïda", "91 22 33 44", "Tokoin, Lomé",
+                    latitude=Decimal("6.1467"), longitude=Decimal("1.2183"),
+                ),
+                self._creer_marchand(
+                    chargee_ventes, "Dépôt Faveur", "91 55 66 77", "Hédzranawoé, Lomé",
+                    latitude=Decimal("6.1467"), longitude=Decimal("1.2528"),
+                ),
             ]
 
             maintenant = timezone.now()
@@ -220,11 +235,17 @@ class Command(BaseCommand):
         )
         return commercial
 
-    def _creer_marchand(self, commercial, nom, telephone, adresse):
+    def _creer_marchand(self, commercial, nom, telephone, adresse, latitude=None, longitude=None):
         marchand, _ = Client.objects.get_or_create(
             commercial=commercial,
             nom=nom,
-            defaults={"mode_vente": Client.ModeVente.DEPOT_VENTE, "telephone": telephone, "adresse": adresse},
+            defaults={
+                "mode_vente": Client.ModeVente.DEPOT_VENTE,
+                "telephone": telephone,
+                "adresse": adresse,
+                "latitude": latitude,
+                "longitude": longitude,
+            },
         )
         return marchand
 
