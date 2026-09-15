@@ -10,8 +10,19 @@
   --color-or-500: #b17f1e;
   --color-or-600: #8c6417;
   --color-or-700: #6b4c11;
+
+  --color-vert-50: #e7f3ee;
+  --color-vert-100: #c9e5d8;
+  --color-vert-200: #96cdb2;
+  --color-vert-300: #5cad86;
+  --color-vert-400: #2f8c63;
+  --color-vert-500: #1c6e4c;
+  --color-vert-600: #17573f;
+  --color-vert-700: #123a2e;
+  --color-vert-800: #0d2b22;
 }
 
 body {
   margin: 0;
+  background-color: #fdfbf5;
 }

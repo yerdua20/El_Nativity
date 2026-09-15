@@ -53,7 +53,7 @@ const LIBELLES_TYPE = {
 }
 
 function Badge({ icon: Icon, tonalite }) {
-  const classes = tonalite === 'or' ? 'bg-or-100 text-or-600' : 'bg-slate-100 text-slate-600'
+  const classes = tonalite === 'or' ? 'bg-or-100 text-or-600' : 'bg-vert-100 text-vert-700'
   return (
     <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${classes}`}>
       <Icon className="h-5 w-5" />
@@ -174,24 +174,24 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-neutral-800 to-neutral-900 px-6 py-8 text-white shadow-sm">
-        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(206,154,46,0.35)_1.5px,transparent_1.5px)] bg-[length:22px_22px]" />
-        <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(206,154,46,0.08)_0px,rgba(206,154,46,0.08)_2px,transparent_2px,transparent_18px)]" />
-        <div className="absolute -top-12 -left-12 h-36 w-36 rounded-full border-2 border-or-400/25" />
-        <div className="absolute -top-12 -left-12 h-36 w-36 rounded-full bg-or-400/10" />
+      <div className="relative mb-8 overflow-hidden rounded-xl bg-gradient-to-br from-vert-600 to-vert-800 px-6 py-8 text-white shadow-sm">
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(224,179,85,0.45)_1.5px,transparent_1.5px)] bg-[length:22px_22px]" />
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(224,179,85,0.1)_0px,rgba(224,179,85,0.1)_2px,transparent_2px,transparent_18px)]" />
+        <div className="absolute -top-12 -left-12 h-36 w-36 rounded-full border-2 border-or-300/35" />
+        <div className="absolute -top-12 -left-12 h-36 w-36 rounded-full bg-or-400/15" />
         <div className="absolute top-1/2 left-1/3 h-20 w-20 -translate-y-1/2 rounded-full border border-white/10" />
         <div className="absolute -bottom-20 left-1/4 h-28 w-28 rounded-full bg-white/5" />
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full border-2 border-or-400/30" />
-        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/15" />
-        <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-400/20" />
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full border-2 border-or-300/40" />
+        <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-or-400/20" />
+        <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full border-2 border-or-300/25" />
         <div className="absolute -bottom-16 -right-24 h-56 w-56 rounded-full bg-white/5" />
         <div className="relative flex items-center gap-4">
-          <div className="flex h-20 w-12 shrink-0 items-center justify-center rounded-full bg-transparent">
-            <Home className="h-10 w-10" />
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-or-400/20 ring-2 ring-or-300/40">
+            <Home className="h-8 w-8 text-or-200" />
           </div>
           <div>
             <h1 className="text-2xl font-semibold">Tableau de bord</h1>
-            <p className="text-sm text-neutral-300">Vue d'ensemble de votre activité</p>
+            <p className="text-sm text-vert-100">Vue d'ensemble de votre activité</p>
           </div>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function Dashboard() {
           label="Personnels actifs"
           value={commerciaux ? commerciauxActifs : '…'}
           icon={Briefcase}
-          tonalite="neutre"
+          tonalite="vert"
         />
         <StatTile
           label="Marchandise en cours"
@@ -214,13 +214,13 @@ export default function Dashboard() {
           label="Créances marchands"
           value={marchands ? formaterMontant(creancesTotal) : '…'}
           icon={FileText}
-          tonalite="neutre"
+          tonalite="vert"
         />
       </div>
 
       <div className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <GraphiqueBarres titre="Marchandise par marchand" donnees={topMarchandise} hex="#ce9a2e" tonalite="or" />
-        <GraphiqueBarres titre="Plus grosses créances marchands" donnees={topCreances} hex="#52525b" tonalite="neutre" />
+        <GraphiqueBarres titre="Plus grosses créances marchands" donnees={topCreances} hex="#1c6e4c" tonalite="vert" />
       </div>
 
       <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
@@ -281,7 +281,7 @@ export default function Dashboard() {
             className="group relative flex items-center gap-3 overflow-hidden rounded-lg border border-slate-200 bg-white p-4 transition hover:border-or-300 hover:shadow-sm"
           >
             <span className="absolute inset-y-0 left-0 w-1 scale-y-0 bg-or-400 transition-transform group-hover:scale-y-100" />
-            <Badge icon={action.icon} tonalite={index % 2 === 0 ? 'or' : 'neutre'} />
+            <Badge icon={action.icon} tonalite={index % 2 === 0 ? 'or' : 'vert'} />
             <div>
               <p className="font-medium text-slate-900">{action.titre}</p>
               <p className="mt-0.5 text-sm text-slate-500">{action.description}</p>

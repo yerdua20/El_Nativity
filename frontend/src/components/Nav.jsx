@@ -34,7 +34,7 @@ const LIENS = [
 
 const lienClasse = ({ isActive }) =>
   `relative flex items-center gap-3 rounded-md px-4 py-2.5 text-base font-medium transition ${
-    isActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
+    isActive ? 'bg-vert-700 text-white' : 'text-slate-700 hover:bg-or-50'
   }`
 
 export default function Nav() {
@@ -56,7 +56,7 @@ export default function Nav() {
 
         <button
           onClick={synchroniser}
-          className="relative mb-4 flex w-full items-center gap-3 rounded-2xl border border-green-300 bg-green-50 px-4 py-2.5 text-base font-medium text-green-800 hover:bg-green-100"
+          className="relative mb-4 flex w-full items-center gap-3 rounded-2xl border border-vert-300 bg-vert-50 px-4 py-2.5 text-base font-medium text-vert-700 hover:bg-vert-100"
         >
           <RefreshCw className="h-5 w-5 shrink-0" />
           Synchroniser

@@ -27,21 +27,21 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen">
-      <div className="relative hidden w-full max-w-md flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-neutral-800 to-neutral-900 p-10 text-center text-white lg:flex">
-        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(206,154,46,0.35)_1.5px,transparent_1.5px)] bg-[length:22px_22px]" />
-        <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(206,154,46,0.08)_0px,rgba(206,154,46,0.08)_2px,transparent_2px,transparent_18px)]" />
-        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full border-2 border-or-400/30" />
-        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-or-400/15" />
-        <div className="absolute -bottom-28 -right-16 h-80 w-80 rounded-full border-2 border-or-400/20" />
+      <div className="relative hidden w-full max-w-md flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-vert-600 to-vert-800 p-10 text-center text-white lg:flex">
+        <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(224,179,85,0.45)_1.5px,transparent_1.5px)] bg-[length:22px_22px]" />
+        <div className="absolute inset-0 bg-[repeating-linear-gradient(135deg,rgba(224,179,85,0.1)_0px,rgba(224,179,85,0.1)_2px,transparent_2px,transparent_18px)]" />
+        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full border-2 border-or-300/40" />
+        <div className="absolute -top-20 -left-20 h-72 w-72 rounded-full bg-or-400/20" />
+        <div className="absolute -bottom-28 -right-16 h-80 w-80 rounded-full border-2 border-or-300/30" />
         <div className="absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-white/5" />
-        <div className="absolute top-1/4 -right-16 h-44 w-44 rounded-full border border-or-400/30" />
+        <div className="absolute top-1/4 -right-16 h-44 w-44 rounded-full border border-or-300/40" />
         <img
           src={logoNativite}
           alt="La Nativité"
-          className="relative mb-6 w-36 rounded-full ring-4 ring-or-400/40"
+          className="relative mb-6 w-36 rounded-full ring-4 ring-or-300/50"
         />
         <h1 className="relative text-2xl font-semibold">La Nativité</h1>
-        <p className="relative mt-3 max-w-xs text-sm text-neutral-300">
+        <p className="relative mt-3 max-w-xs text-sm text-vert-100">
           Suivi des dépôts-ventes, des stocks et des créances des commerciaux.
         </p>
       </div>
@@ -84,7 +84,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={enCours}
-            className="w-full rounded bg-or-500 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
+            className="w-full rounded-2xl bg-or-500 py-2 text-sm font-medium text-white hover:bg-or-600 disabled:opacity-50"
           >
             {enCours ? 'Connexion...' : 'Se connecter'}
           </button>
