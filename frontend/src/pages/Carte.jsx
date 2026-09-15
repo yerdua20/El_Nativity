@@ -1,29 +1,33 @@
 import { MapPin } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import L from 'leaflet'
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import { listerClients } from '../api/ressources'
+import CartePanneauErreur from '../components/CartePanneauErreur'
 import EnTeteBandeau from '../components/EnTeteBandeau'
+import ErrorBoundary from '../components/ErrorBoundary'
 import Layout from '../components/Layout'
 
-delete L.Icon.Default.prototype._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-})
+// Icônes en div (cercle CSS) plutôt que le patch classique de
+// L.Icon.Default (delete _getIconUrl + mergeOptions) : cette
+// rustine mute un prototype global partagé, ce qui est instable en
+// dev (HMR, remontages) et provoquait le crash Leaflet
+// "Cannot read properties of undefined (reading '_leaflet_events')"
+// sur cette page. Chaque marqueur reçoit ici une icône explicite,
+// jamais la valeur implicite par défaut.
+function creerIconeRond(couleur) {
+  return new L.DivIcon({
+    className: '',
+    html: `<span style="display:block;width:18px;height:18px;border-radius:9999px;background:${couleur};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></span>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -9],
+  })
+}
 
-const iconeMarchand = new L.DivIcon({
-  className: '',
-  html: '<span style="display:block;width:18px;height:18px;border-radius:9999px;background:#f97316;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);"></span>',
-  iconSize: [18, 18],
-  iconAnchor: [9, 9],
-  popupAnchor: [0, -9],
-})
+const iconeMarchand = creerIconeRond('#f97316')
+const iconeClient = creerIconeRond('#3b82f6')
 
 const CENTRE_LOME = [6.1319, 1.2228]
 
@@ -87,51 +91,53 @@ export default function Carte() {
             </span>
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-slate-200" style={{ height: '32rem' }}>
-            <MapContainer
-              key={cleCarte}
-              center={centre}
-              zoom={localises.length > 0 ? 12 : 11}
-              style={{ height: '100%', width: '100%' }}
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              {localises.map((client) => {
-                const estMarchand = client.mode_vente === 'DEPOT_VENTE'
-                return (
-                  <Marker
-                    key={client.id}
-                    position={[Number(client.latitude), Number(client.longitude)]}
-                    icon={estMarchand ? iconeMarchand : undefined}
-                  >
-                    <Popup>
-                      <strong>{client.nom}</strong> ({estMarchand ? 'Marchand' : 'Client'})
-                      {client.adresse && (
-                        <>
-                          <br />
-                          {client.adresse}
-                        </>
-                      )}
-                      {client.telephone && (
-                        <>
-                          <br />
-                          {client.telephone}
-                        </>
-                      )}
-                      {estMarchand && (
-                        <>
-                          <br />
-                          Solde marchandise : {client.solde_marchandise}
-                        </>
-                      )}
-                    </Popup>
-                  </Marker>
-                )
-              })}
-            </MapContainer>
-          </div>
+          <ErrorBoundary fallback={<CartePanneauErreur />}>
+            <div className="overflow-hidden rounded-lg border border-slate-200" style={{ height: '32rem' }}>
+              <MapContainer
+                key={cleCarte}
+                center={centre}
+                zoom={localises.length > 0 ? 12 : 11}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                {localises.map((client) => {
+                  const estMarchand = client.mode_vente === 'DEPOT_VENTE'
+                  return (
+                    <Marker
+                      key={client.id}
+                      position={[Number(client.latitude), Number(client.longitude)]}
+                      icon={estMarchand ? iconeMarchand : iconeClient}
+                    >
+                      <Popup>
+                        <strong>{client.nom}</strong> ({estMarchand ? 'Marchand' : 'Client'})
+                        {client.adresse && (
+                          <>
+                            <br />
+                            {client.adresse}
+                          </>
+                        )}
+                        {client.telephone && (
+                          <>
+                            <br />
+                            {client.telephone}
+                          </>
+                        )}
+                        {estMarchand && (
+                          <>
+                            <br />
+                            Solde marchandise : {client.solde_marchandise}
+                          </>
+                        )}
+                      </Popup>
+                    </Marker>
+                  )
+                })}
+              </MapContainer>
+            </div>
+          </ErrorBoundary>
         </>
       )}
     </Layout>
