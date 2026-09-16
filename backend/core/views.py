@@ -343,6 +343,9 @@ class MouvementStockViewSet(viewsets.ModelViewSet):
         # mouvements, pas seulement ceux qu'il a lui-même tagués.
         qs = MouvementStock.objects.all()
         qs = _filtrer_par_client(qs, self.request)
+        types = self.request.query_params.get("type__in")
+        if types:
+            qs = qs.filter(type__in=types.split(","))
         depuis = _depuis(self.request)
         if depuis:
             qs = qs.filter(created_at__gt=depuis)
