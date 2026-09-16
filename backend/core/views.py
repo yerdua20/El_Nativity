@@ -10,7 +10,6 @@ from django.db.models import (
     F,
     OuterRef,
     ProtectedError,
-    Q,
     Subquery,
     Sum,
     Value,
@@ -37,7 +36,13 @@ from core.models import (
     StockPointDeVente,
     Tarif,
 )
-from core.permissions import EstStaffPourEcriture, commercial_de
+from core.permissions import (
+    EcritureCatalogue,
+    EcritureOperationnelle,
+    EcriturePersonnels,
+    EstStaffPourEcriture,
+    niveau_acces,
+)
 from core.serializers import (
     ClientSerializer,
     CommercialSerializer,
@@ -72,27 +77,31 @@ def _filtrer_par_client(qs, request):
     return qs.filter(client_id=client_id) if client_id else qs
 
 
-def _infos_utilisateur(user):
+def _infos_utilisateur(request):
+    user = request.user
+    commercial = getattr(user, "commercial", None)
     return {
         "id": user.id,
         "username": user.username,
         "email": user.email,
         "is_staff": user.is_staff,
+        "role": commercial.role if commercial else None,
+        "niveau_acces": niveau_acces(request),
     }
 
 
 class MoiView(APIView):
-    """Infos du compte connecté (pour l'écran Profil)."""
+    """Infos du compte connecté (pour l'écran Profil et les droits d'accès)."""
 
     def get(self, request):
-        return Response(_infos_utilisateur(request.user))
+        return Response(_infos_utilisateur(request))
 
     def patch(self, request):
         email = request.data.get("email")
         if email is not None:
             request.user.email = email
             request.user.save(update_fields=["email"])
-        return Response(_infos_utilisateur(request.user))
+        return Response(_infos_utilisateur(request))
 
 
 class ChangerMotDePasseView(APIView):
@@ -235,43 +244,35 @@ class ExportCSVView(APIView):
 class PointDeVenteViewSet(viewsets.ModelViewSet):
     queryset = PointDeVente.objects.all()
     serializer_class = PointDeVenteSerializer
-    permission_classes = [IsAuthenticated, EstStaffPourEcriture]
+    permission_classes = [IsAuthenticated, EcritureCatalogue]
 
 
 class ProduitViewSet(viewsets.ModelViewSet):
     queryset = Produit.objects.all()
     serializer_class = ProduitSerializer
-    permission_classes = [IsAuthenticated, EstStaffPourEcriture]
+    permission_classes = [IsAuthenticated, EcritureCatalogue]
 
 
 class TarifViewSet(viewsets.ModelViewSet):
     queryset = Tarif.objects.all()
     serializer_class = TarifSerializer
-    permission_classes = [IsAuthenticated, EstStaffPourEcriture]
+    permission_classes = [IsAuthenticated, EcritureCatalogue]
 
 
 class CommercialViewSet(viewsets.ModelViewSet):
+    queryset = Commercial.objects.all()
     serializer_class = CommercialSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        qs = Commercial.objects.all()
-        if self.request.user.is_staff:
-            return qs
-        proprietaire = commercial_de(self.request)
-        return qs.filter(pk=proprietaire.pk) if proprietaire else qs.none()
+    permission_classes = [IsAuthenticated, EcriturePersonnels]
 
 
 class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, EcritureOperationnelle]
 
     def get_queryset(self):
-        qs = Client.objects.all()
-        if self.request.user.is_staff:
-            return qs
-        proprietaire = commercial_de(self.request)
-        return qs.filter(commercial=proprietaire) if proprietaire else qs.none()
+        # Un seul lot commun, pas de portefeuille individuel : tout le
+        # personnel connecté voit tous les clients/marchands.
+        return Client.objects.all()
 
     @action(detail=True, methods=["get"])
     def stock(self, request, pk=None):
@@ -333,15 +334,12 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 class MouvementStockViewSet(viewsets.ModelViewSet):
     serializer_class = MouvementStockSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, EcritureOperationnelle]
 
     def get_queryset(self):
+        # Un seul lot commun : tout le personnel connecté voit tous les
+        # mouvements, pas seulement ceux qu'il a lui-même tagués.
         qs = MouvementStock.objects.all()
-        if not self.request.user.is_staff:
-            proprietaire = commercial_de(self.request)
-            if not proprietaire:
-                return qs.none()
-            qs = qs.filter(Q(commercial=proprietaire) | Q(client__commercial=proprietaire))
         qs = _filtrer_par_client(qs, self.request)
         depuis = _depuis(self.request)
         if depuis:
@@ -352,7 +350,7 @@ class MouvementStockViewSet(viewsets.ModelViewSet):
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.select_related("point_de_vente").all()
     serializer_class = ReservationSerializer
-    permission_classes = [IsAuthenticated, EstStaffPourEcriture]
+    permission_classes = [IsAuthenticated, EcritureOperationnelle]
 
 
 class StockPointDeVenteViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -389,15 +387,12 @@ class StockPointDeVenteViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 class EncaissementViewSet(viewsets.ModelViewSet):
     serializer_class = EncaissementSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, EcritureOperationnelle]
 
     def get_queryset(self):
+        # Un seul lot commun : tout le personnel connecté voit tous les
+        # encaissements, pas seulement ceux qu'il a lui-même collectés.
         qs = Encaissement.objects.all()
-        if not self.request.user.is_staff:
-            proprietaire = commercial_de(self.request)
-            if not proprietaire:
-                return qs.none()
-            qs = qs.filter(Q(collecte_par=proprietaire) | Q(client__commercial=proprietaire))
         qs = _filtrer_par_client(qs, self.request)
         depuis = _depuis(self.request)
         if depuis:

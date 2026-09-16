@@ -15,7 +15,6 @@ from core.models import (
     StockPointDeVente,
     Tarif,
 )
-from core.permissions import commercial_de
 from core.services import enregistrer_encaissement, enregistrer_mouvement_stock
 
 User = get_user_model()
@@ -131,18 +130,6 @@ class ClientSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def validate_commercial(self, commercial):
-        if commercial is None:
-            return commercial
-        request = self.context["request"]
-        if not request.user.is_staff:
-            proprietaire = commercial_de(request)
-            if proprietaire is None or commercial.pk != proprietaire.pk:
-                raise serializers.ValidationError(
-                    "Vous ne pouvez créer un client que pour vous-même."
-                )
-        return commercial
-
     def validate(self, attrs):
         mode_vente = attrs.get("mode_vente", getattr(self.instance, "mode_vente", Client.ModeVente.DEPOT_VENTE))
         commercial = attrs.get("commercial", getattr(self.instance, "commercial", None))
@@ -180,7 +167,6 @@ class MouvementStockSerializer(serializers.ModelSerializer):
         read_only_fields = ["prix_unitaire", "montant", "cree_par", "created_at"]
 
     def validate(self, attrs):
-        request = self.context["request"]
         type_ = attrs.get("type", getattr(self.instance, "type", None))
         client = attrs.get("client")
 
@@ -197,19 +183,6 @@ class MouvementStockSerializer(serializers.ModelSerializer):
                     {"client": "Une vente directe ne peut être associée qu'à un client cash."}
                 )
 
-        if not request.user.is_staff:
-            proprietaire = commercial_de(request)
-            commercial = attrs.get("commercial")
-            if commercial is not None and (proprietaire is None or commercial.pk != proprietaire.pk):
-                raise serializers.ValidationError(
-                    "Vous ne pouvez saisir un mouvement que sur votre propre portefeuille."
-                )
-            if client is not None and (
-                proprietaire is None or client.commercial_id != proprietaire.pk
-            ):
-                raise serializers.ValidationError(
-                    "Ce client n'est pas rattaché à votre portefeuille."
-                )
         return attrs
 
     def create(self, validated_data):
@@ -237,22 +210,6 @@ class EncaissementSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ["cree_par", "created_at"]
-
-    def validate(self, attrs):
-        request = self.context["request"]
-        if not request.user.is_staff:
-            proprietaire = commercial_de(request)
-            client = attrs.get("client")
-            collecte_par = attrs.get("collecte_par")
-            if proprietaire is None or (client is not None and client.commercial_id != proprietaire.pk):
-                raise serializers.ValidationError(
-                    "Ce client n'est pas rattaché à votre portefeuille."
-                )
-            if collecte_par is not None and collecte_par.pk != proprietaire.pk:
-                raise serializers.ValidationError(
-                    "Vous ne pouvez déclarer avoir collecté que pour vous-même."
-                )
-        return attrs
 
     def create(self, validated_data):
         request = self.context["request"]

@@ -24,7 +24,7 @@ from core.services import enregistrer_encaissement, enregistrer_mouvement_stock
 
 NOMS_POINTS_DE_VENTE = ["Dépôt Central Lomé", "Bar La Nativité - Agoè", "Restaurant La Nativité"]
 REFERENCES_PRODUITS = ["BIERE-AWO-CASIER", "SODA-COCA-33", "EAU-MIN-15L", "MENU-POULET", "MENU-POISSON"]
-USERNAMES_COMMERCIAUX = ["koffi.amegnran", "afiwa.dogbe"]
+USERNAMES_COMMERCIAUX = ["koffi.amegnran", "afiwa.dogbe", "pdg.nativite", "comptable.nativite"]
 NOMS_CLIENTS_CASH = ["Boutique Bella"]
 
 
@@ -75,6 +75,12 @@ class Command(BaseCommand):
             )
             chargee_ventes = self._creer_commercial(
                 depot, "Afiwa", "Dogbe", "91 44 55 66", username="afiwa.dogbe", role=Commercial.Role.CHARGE_VENTES
+            )
+            self._creer_commercial(
+                depot, "Ama", "Nativité", "90 00 11 22", username="pdg.nativite", role=Commercial.Role.PDG
+            )
+            self._creer_commercial(
+                depot, "Yao", "Comptes", "90 00 33 44", username="comptable.nativite", role=Commercial.Role.COMPTABLE
             )
 
             marchands_gerant = [
@@ -179,6 +185,8 @@ class Command(BaseCommand):
         self.stdout.write("Comptes du personnel créés (mot de passe : test1234) :")
         self.stdout.write("  - koffi.amegnran (gérant)")
         self.stdout.write("  - afiwa.dogbe (chargée des ventes)")
+        self.stdout.write("  - pdg.nativite (PDG)")
+        self.stdout.write("  - comptable.nativite (comptable)")
 
     # -- Création des entités de base ------------------------------------
 
