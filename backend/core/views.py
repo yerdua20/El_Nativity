@@ -38,8 +38,10 @@ from core.models import (
 )
 from core.permissions import (
     EcritureCatalogue,
-    EcritureOperationnelle,
+    EcritureMarchandsClients,
+    EcritureMouvementStock,
     EcriturePersonnels,
+    EcritureVenteDirecteEtReservations,
     EstStaffPourEcriture,
     niveau_acces,
 )
@@ -267,7 +269,7 @@ class CommercialViewSet(viewsets.ModelViewSet):
 
 class ClientViewSet(viewsets.ModelViewSet):
     serializer_class = ClientSerializer
-    permission_classes = [IsAuthenticated, EcritureOperationnelle]
+    permission_classes = [IsAuthenticated, EcritureMarchandsClients]
 
     def get_queryset(self):
         # Un seul lot commun, pas de portefeuille individuel : tout le
@@ -334,7 +336,7 @@ class ClientViewSet(viewsets.ModelViewSet):
 
 class MouvementStockViewSet(viewsets.ModelViewSet):
     serializer_class = MouvementStockSerializer
-    permission_classes = [IsAuthenticated, EcritureOperationnelle]
+    permission_classes = [IsAuthenticated, EcritureMouvementStock]
 
     def get_queryset(self):
         # Un seul lot commun : tout le personnel connecté voit tous les
@@ -350,7 +352,7 @@ class MouvementStockViewSet(viewsets.ModelViewSet):
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.select_related("point_de_vente").all()
     serializer_class = ReservationSerializer
-    permission_classes = [IsAuthenticated, EcritureOperationnelle]
+    permission_classes = [IsAuthenticated, EcritureVenteDirecteEtReservations]
 
 
 class StockPointDeVenteViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -387,7 +389,7 @@ class StockPointDeVenteViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 class EncaissementViewSet(viewsets.ModelViewSet):
     serializer_class = EncaissementSerializer
-    permission_classes = [IsAuthenticated, EcritureOperationnelle]
+    permission_classes = [IsAuthenticated, EcritureMarchandsClients]
 
     def get_queryset(self):
         # Un seul lot commun : tout le personnel connecté voit tous les

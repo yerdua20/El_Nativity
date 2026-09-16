@@ -10,9 +10,15 @@ def commercial_de(request):
 # commun à tout le personnel (pas de portefeuille individuel) : ces
 # niveaux ne servent qu'à restreindre certaines ÉCRITURES, jamais la
 # lecture, qui reste ouverte à tout le personnel connecté.
+#
+# Gérant et chargé(e) des ventes ont des périmètres distincts : le
+# gérant s'occupe du bar/restaurant/place de fêtes et du personnel,
+# la chargée des ventes s'occupe des marchands, des clients et des
+# ventes en dépôt-vente.
 ADMIN = "ADMIN"
 PDG = "PDG"
-OPERATIONNEL = "OPERATIONNEL"
+GERANT = "GERANT"
+CHARGE_VENTES = "CHARGE_VENTES"
 COMPTABLE = "COMPTABLE"
 
 
@@ -21,7 +27,8 @@ def niveau_acces(request):
     Niveau d'accès de l'utilisateur connecté :
     - ADMIN : compte technique (is_staff), tout accès.
     - PDG : tout accès métier, sauf gestion des comptes utilisateurs.
-    - OPERATIONNEL : gérant / chargé(e) des ventes, opérations terrain.
+    - GERANT : vente directe (bar/restaurant), réservations, personnel.
+    - CHARGE_VENTES : marchands, clients, dépôts/ventes/retours/encaissements.
     - COMPTABLE : comptable (par défaut aussi pour un rôle "Autre"
       non catégorisé) : lecture seule sur les écrans opérationnels.
     """
@@ -37,8 +44,10 @@ def niveau_acces(request):
     role = commercial.role if commercial else None
     if role == Commercial.Role.PDG:
         return PDG
-    if role in (Commercial.Role.GERANT, Commercial.Role.CHARGE_VENTES):
-        return OPERATIONNEL
+    if role == Commercial.Role.GERANT:
+        return GERANT
+    if role == Commercial.Role.CHARGE_VENTES:
+        return CHARGE_VENTES
     return COMPTABLE
 
 
@@ -77,16 +86,58 @@ class EcritureCatalogue(EcritureReserveeAuNiveau):
 
 
 class EcriturePersonnels(EcritureReserveeAuNiveau):
-    """Créer/modifier le personnel : réservé à la direction."""
+    """Créer/modifier le personnel : direction + gérant (qui s'en occupe)."""
 
-    niveaux_autorises = (ADMIN, PDG)
+    niveaux_autorises = (ADMIN, PDG, GERANT)
 
 
-class EcritureOperationnelle(EcritureReserveeAuNiveau):
+class EcritureMarchandsClients(EcritureReserveeAuNiveau):
     """
-    Dépôts, ventes, retours, encaissements, clients/marchands,
-    réservations : ouvert au personnel de terrain, fermé au comptable
-    (lecture seule pour lui sur ces écrans).
+    Marchands, clients cash, encaissements : le domaine de la chargée
+    des ventes. Le gérant reste en lecture seule sur ces écrans.
     """
 
-    niveaux_autorises = (ADMIN, PDG, OPERATIONNEL)
+    niveaux_autorises = (ADMIN, PDG, CHARGE_VENTES)
+
+
+class EcritureVenteDirecteEtReservations(EcritureReserveeAuNiveau):
+    """
+    Vente directe (bar/restaurant) et réservations (place de fêtes) :
+    le domaine du gérant. La chargée des ventes reste en lecture seule.
+    """
+
+    niveaux_autorises = (ADMIN, PDG, GERANT)
+
+
+class EcritureReceptionStock(EcritureReserveeAuNiveau):
+    """
+    Réception de stock au dépôt central : nécessaire aux deux circuits
+    (gérant comme chargée des ventes), fermée au comptable.
+    """
+
+    niveaux_autorises = (ADMIN, PDG, GERANT, CHARGE_VENTES)
+
+
+# Qui peut enregistrer quel type de mouvement de stock : dépend du
+# type, pas seulement du rôle, puisqu'un même endpoint sert les deux
+# circuits (vente directe côté gérant, marchands côté chargée des
+# ventes) plus la réception de stock, commune aux deux.
+NIVEAUX_PAR_TYPE_MOUVEMENT = {
+    "ENTREE_DEPOT": (ADMIN, PDG, GERANT, CHARGE_VENTES),
+    "DEPOT_CLIENT": (ADMIN, PDG, CHARGE_VENTES),
+    "VENTE_DECLAREE": (ADMIN, PDG, CHARGE_VENTES),
+    "RETOUR_CLIENT": (ADMIN, PDG, CHARGE_VENTES),
+    "VENTE_DIRECTE": (ADMIN, PDG, GERANT),
+    "PERTE": (ADMIN, PDG, GERANT, CHARGE_VENTES),
+}
+
+
+class EcritureMouvementStock(permissions.BasePermission):
+    """Autorise l'écriture selon le type de mouvement (voir NIVEAUX_PAR_TYPE_MOUVEMENT)."""
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        type_ = request.data.get("type")
+        niveaux_autorises = NIVEAUX_PAR_TYPE_MOUVEMENT.get(type_, (ADMIN, PDG))
+        return niveau_acces(request) in niveaux_autorises
