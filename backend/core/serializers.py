@@ -86,11 +86,26 @@ class TarifSerializer(serializers.ModelSerializer):
 
 
 class CommercialSerializer(serializers.ModelSerializer):
+    """
+    `username`/`password` sont en écriture seule et facultatifs : les
+    renseigner ensemble crée (ou met à jour) le compte de connexion
+    lié à ce personnel, en plus de sa fiche. Un personnel sans les
+    renseigner reste un simple tag d'audit, sans accès à l'application
+    (cas d'un rôle "Autre" qui n'a pas besoin de se connecter).
+    """
+
+    username = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    nom_utilisateur = serializers.SerializerMethodField()
+
     class Meta:
         model = Commercial
         fields = [
             "id",
             "utilisateur",
+            "nom_utilisateur",
+            "username",
+            "password",
             "point_de_vente",
             "role",
             "nom",
@@ -102,7 +117,73 @@ class CommercialSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["created_at", "updated_at"]
+        read_only_fields = ["utilisateur", "created_at", "updated_at"]
+
+    def get_nom_utilisateur(self, commercial):
+        return commercial.utilisateur.username if commercial.utilisateur else None
+
+    def validate_username(self, value):
+        if not value:
+            return value
+        qs = User.objects.filter(username=value)
+        if self.instance and self.instance.utilisateur_id:
+            qs = qs.exclude(pk=self.instance.utilisateur_id)
+        if qs.exists():
+            raise serializers.ValidationError("Cet identifiant est déjà utilisé.")
+        return value
+
+    def validate_password(self, value):
+        if value:
+            try:
+                validate_password(value)
+            except DjangoValidationError as exc:
+                raise serializers.ValidationError(list(exc.messages))
+        return value
+
+    def validate(self, attrs):
+        username = attrs.get("username", "")
+        password = attrs.get("password", "")
+        a_deja_un_compte = bool(self.instance and self.instance.utilisateur_id)
+        if password and not username and not a_deja_un_compte:
+            raise serializers.ValidationError(
+                {"username": "Obligatoire pour créer un accès de connexion."}
+            )
+        if username and not password and not a_deja_un_compte:
+            raise serializers.ValidationError(
+                {"password": "Obligatoire pour créer un accès de connexion."}
+            )
+        return attrs
+
+    def create(self, validated_data):
+        username = validated_data.pop("username", "")
+        password = validated_data.pop("password", "")
+        utilisateur = None
+        if username and password:
+            utilisateur = User(
+                username=username,
+                first_name=validated_data.get("prenom", ""),
+                last_name=validated_data.get("nom", ""),
+            )
+            utilisateur.set_password(password)
+            utilisateur.save()
+        return Commercial.objects.create(utilisateur=utilisateur, **validated_data)
+
+    def update(self, instance, validated_data):
+        username = validated_data.pop("username", "")
+        password = validated_data.pop("password", "")
+        if username or password:
+            utilisateur = instance.utilisateur or User(
+                first_name=instance.prenom, last_name=instance.nom
+            )
+            if username:
+                utilisateur.username = username
+            if password:
+                utilisateur.set_password(password)
+            utilisateur.save()
+            if instance.utilisateur_id != utilisateur.pk:
+                instance.utilisateur = utilisateur
+                instance.save(update_fields=["utilisateur"])
+        return super().update(instance, validated_data)
 
 
 class ClientSerializer(serializers.ModelSerializer):
