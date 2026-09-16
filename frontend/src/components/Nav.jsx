@@ -44,9 +44,9 @@ export default function Nav() {
   const echecs = entrees.filter((entree) => entree.statut === 'echec').length
   const total = enAttente + echecs
 
-  // Vente directe (bar/restaurant) est une opération terrain : masquée
-  // pour le comptable, qui reste en lecture seule sur ces écrans.
-  const liens = LIENS.filter((lien) => lien.to !== '/vente-directe' || peut.ecrireOperations)
+  // Vente directe (bar/restaurant) relève du gérant : masquée pour
+  // la chargée des ventes et le comptable, qui n'en ont pas l'usage.
+  const liens = LIENS.filter((lien) => lien.to !== '/vente-directe' || peut.gererVenteDirecte)
 
   return (
     <nav className="flex shrink-0 flex-col border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">

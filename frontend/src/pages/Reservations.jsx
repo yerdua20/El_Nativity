@@ -92,7 +92,7 @@ export default function Reservations() {
         icone={CalendarClock}
       />
 
-      {peut.ecrireOperations && (
+      {peut.gererReservations && (
         <div className="mb-4 flex justify-end">
           <button
             onClick={() => setFormulaireOuvert((v) => !v)}
@@ -104,7 +104,7 @@ export default function Reservations() {
         </div>
       )}
 
-      {peut.ecrireOperations && formulaireOuvert && (
+      {peut.gererReservations && formulaireOuvert && (
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
           <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <select
@@ -206,7 +206,7 @@ export default function Reservations() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    {peut.ecrireOperations && reservation.statut === 'CONFIRMEE' && (
+                    {peut.gererReservations && reservation.statut === 'CONFIRMEE' && (
                       <>
                         <button
                           onClick={() => changerStatut(reservation, 'HONOREE')}

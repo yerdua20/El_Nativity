@@ -4,11 +4,15 @@ import { lireMoi } from '../api/ressources'
 
 const AuthContext = createContext(null)
 
-// Niveaux autorisés à effectuer les actions d'écriture "métier"
-// (dépôts, ventes, retours, encaissements, clients/marchands,
-// réservations) — le comptable reste en lecture seule sur ces écrans.
-// Doit rester cohérent avec core/permissions.py côté backend.
-const NIVEAUX_ECRITURE_OPERATIONNELLE = ['ADMIN', 'PDG', 'OPERATIONNEL']
+// Périmètres distincts du gérant (bar/restaurant, réservations,
+// personnel) et de la chargée des ventes (marchands, clients,
+// dépôts/ventes/retours/encaissements) ; le comptable reste en
+// lecture seule partout. Doit rester cohérent avec
+// core/permissions.py côté backend.
+const NIVEAUX_GERANT = ['ADMIN', 'PDG', 'GERANT']
+const NIVEAUX_CHARGE_VENTES = ['ADMIN', 'PDG', 'CHARGE_VENTES']
+const NIVEAUX_RECEPTION_STOCK = ['ADMIN', 'PDG', 'GERANT', 'CHARGE_VENTES']
+const NIVEAUX_PERSONNELS = ['ADMIN', 'PDG', 'GERANT']
 const NIVEAUX_DIRECTION = ['ADMIN', 'PDG']
 
 export function AuthProvider({ children }) {
@@ -50,8 +54,11 @@ export function AuthProvider({ children }) {
   // on n'affiche pas encore un menu restreint par défaut : le serveur
   // reste de toute façon la seule vraie barrière de sécurité.
   const peut = {
-    ecrireOperations: niveau === null || NIVEAUX_ECRITURE_OPERATIONNELLE.includes(niveau),
-    gererPersonnels: niveau === null || NIVEAUX_DIRECTION.includes(niveau),
+    gererVenteDirecte: niveau === null || NIVEAUX_GERANT.includes(niveau),
+    gererReservations: niveau === null || NIVEAUX_GERANT.includes(niveau),
+    gererMarchandsClients: niveau === null || NIVEAUX_CHARGE_VENTES.includes(niveau),
+    receptionnerStock: niveau === null || NIVEAUX_RECEPTION_STOCK.includes(niveau),
+    gererPersonnels: niveau === null || NIVEAUX_PERSONNELS.includes(niveau),
     gererCatalogue: niveau === null || NIVEAUX_DIRECTION.includes(niveau),
   }
 

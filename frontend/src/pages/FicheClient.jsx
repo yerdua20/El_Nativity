@@ -232,7 +232,7 @@ export default function FicheClient() {
             )}
           </div>
 
-          {peut.ecrireOperations && (
+          {peut.gererMarchandsClients && (
             <div className="mb-8 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-700">Déposer de la marchandise</h2>
               <button
@@ -245,7 +245,7 @@ export default function FicheClient() {
             </div>
           )}
 
-          {peut.ecrireOperations && formulaireOuvert && (
+          {peut.gererMarchandsClients && formulaireOuvert && (
             <form onSubmit={handleSubmitDepot} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <select
@@ -335,7 +335,7 @@ export default function FicheClient() {
             </form>
           )}
 
-          {peut.ecrireOperations && (
+          {peut.gererMarchandsClients && (
             <div className="mb-8 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-700">Déclarer une vente et encaisser</h2>
               <button
@@ -348,7 +348,7 @@ export default function FicheClient() {
             </div>
           )}
 
-          {peut.ecrireOperations && formulaireVenteOuvert && (
+          {peut.gererMarchandsClients && formulaireVenteOuvert && (
             <form onSubmit={handleSubmitVente} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-3 text-sm text-slate-500">
                 Le paiement est saisi en même temps que la vente : le solde marchandise diminue, le
@@ -459,7 +459,7 @@ export default function FicheClient() {
             </form>
           )}
 
-          {peut.ecrireOperations && (
+          {peut.gererMarchandsClients && (
             <div className="mb-8 flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-700">Retour de marchandise invendue</h2>
               <button
@@ -472,7 +472,7 @@ export default function FicheClient() {
             </div>
           )}
 
-          {peut.ecrireOperations && formulaireRetourOuvert && (
+          {peut.gererMarchandsClients && formulaireRetourOuvert && (
             <form onSubmit={handleSubmitRetour} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-3 text-sm text-slate-500">
                 La quantité retournée recrédite directement le stock du dépôt central.
