@@ -37,16 +37,28 @@ const lienClasse = ({ isActive }) =>
     isActive ? 'bg-vert-700 text-white' : 'text-slate-700 hover:bg-or-50'
   }`
 
+// Univers exclusif du gérant (vente directe, réservations, personnel)
+// et de la chargée des ventes (marchands, clients, carte) : chacun ne
+// voit que son propre périmètre, en plus des écrans communs. Seuls
+// PDG et Admin voient tout. Le catalogue reste réservé à la
+// direction. Le comptable, lui, garde une vue d'ensemble en lecture
+// seule (comportement déjà en place, non modifié ici).
+const LIENS_MASQUES_POUR_GERANT = ['/clients', '/marchands', '/carte', '/catalogue']
+const LIENS_MASQUES_POUR_CHARGE_VENTES = ['/reservations', '/commerciaux', '/catalogue']
+
 export default function Nav() {
-  const { logout, peut } = useAuth()
+  const { logout, peut, niveau } = useAuth()
   const entrees = useFileAttente()
   const enAttente = entrees.filter((entree) => entree.statut === 'en_attente').length
   const echecs = entrees.filter((entree) => entree.statut === 'echec').length
   const total = enAttente + echecs
 
-  // Vente directe (bar/restaurant) relève du gérant : masquée pour
-  // la chargée des ventes et le comptable, qui n'en ont pas l'usage.
-  const liens = LIENS.filter((lien) => lien.to !== '/vente-directe' || peut.gererVenteDirecte)
+  const liens = LIENS.filter((lien) => {
+    if (lien.to === '/vente-directe' && !peut.gererVenteDirecte) return false
+    if (niveau === 'GERANT' && LIENS_MASQUES_POUR_GERANT.includes(lien.to)) return false
+    if (niveau === 'CHARGE_VENTES' && LIENS_MASQUES_POUR_CHARGE_VENTES.includes(lien.to)) return false
+    return true
+  })
 
   return (
     <nav className="flex shrink-0 flex-col border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">

@@ -19,6 +19,7 @@ import {
   listerPointsDeVente,
   listerProduits,
 } from '../api/ressources'
+import { useAuth } from '../auth/AuthContext'
 import Layout from '../components/Layout'
 
 const ACTIONS_RAPIDES = [
@@ -115,6 +116,7 @@ function GraphiqueBarres({ titre, donnees, hex, tonalite }) {
 }
 
 export default function Dashboard() {
+  const { niveau } = useAuth()
   const [clients, setClients] = useState(null)
   const [commerciaux, setCommerciaux] = useState(null)
   const [mouvements, setMouvements] = useState(null)
@@ -274,7 +276,7 @@ export default function Dashboard() {
 
       <h2 className="mb-3 text-sm font-semibold text-slate-700">Actions rapides</h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {ACTIONS_RAPIDES.map((action, index) => (
+        {ACTIONS_RAPIDES.filter((action) => niveau !== 'GERANT' || action.to === '/historique').map((action, index) => (
           <Link
             key={action.to}
             to={action.to}
