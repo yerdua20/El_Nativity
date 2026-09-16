@@ -48,6 +48,11 @@ export async function marquerCommercialParti(id) {
   return data
 }
 
+export async function modifierCommercial(id, payload) {
+  const { data } = await apiClient.patch(`/commerciaux/${id}/`, payload)
+  return data
+}
+
 export async function listerProduits() {
   const { data } = await apiClient.get('/produits/')
   return data.results

@@ -1,6 +1,12 @@
 import { Briefcase, Plus } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { creerCommercial, listerCommerciaux, listerPointsDeVente, marquerCommercialParti } from '../api/ressources'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import {
+  creerCommercial,
+  listerCommerciaux,
+  listerPointsDeVente,
+  marquerCommercialParti,
+  modifierCommercial,
+} from '../api/ressources'
 import { useAuth } from '../auth/AuthContext'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
@@ -39,8 +45,17 @@ export default function Commerciaux() {
   const [role, setRole] = useState('AUTRE')
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [dateEntree, setDateEntree] = useState(todayISO())
+  const [creerAcces, setCreerAcces] = useState(true)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
   const [erreur, setErreur] = useState('')
   const [enCours, setEnCours] = useState(false)
+
+  const [accesPourId, setAccesPourId] = useState(null)
+  const [accesUsername, setAccesUsername] = useState('')
+  const [accesPassword, setAccesPassword] = useState('')
+  const [accesErreur, setAccesErreur] = useState('')
+  const [accesEnCours, setAccesEnCours] = useState(false)
 
   function rafraichir() {
     listerCommerciaux().then(setCommerciaux)
@@ -55,22 +70,30 @@ export default function Commerciaux() {
     setErreur('')
     setEnCours(true)
     try {
-      await creerCommercial({
+      const payload = {
         nom,
         prenom,
         telephone,
         role,
         point_de_vente: Number(pointDeVenteId),
         date_entree: dateEntree,
-      })
+      }
+      if (creerAcces) {
+        payload.username = username
+        payload.password = password
+      }
+      await creerCommercial(payload)
       setNom('')
       setPrenom('')
       setTelephone('')
       setRole('AUTRE')
+      setUsername('')
+      setPassword('')
       setFormulaireOuvert(false)
       rafraichir()
-    } catch {
-      setErreur('Impossible de créer ce personnel.')
+    } catch (error) {
+      const data = error.response?.data
+      setErreur(data ? Object.values(data).flat().join(' ') : 'Impossible de créer ce personnel.')
     } finally {
       setEnCours(false)
     }
@@ -84,6 +107,24 @@ export default function Commerciaux() {
     if (!confirmation) return
     await marquerCommercialParti(commercial.id)
     rafraichir()
+  }
+
+  async function handleCreerAcces(event) {
+    event.preventDefault()
+    setAccesErreur('')
+    setAccesEnCours(true)
+    try {
+      await modifierCommercial(accesPourId, { username: accesUsername, password: accesPassword })
+      setAccesPourId(null)
+      setAccesUsername('')
+      setAccesPassword('')
+      rafraichir()
+    } catch (error) {
+      const data = error.response?.data
+      setAccesErreur(data ? Object.values(data).flat().join(' ') : "Impossible de créer l'accès.")
+    } finally {
+      setAccesEnCours(false)
+    }
   }
 
   return (
@@ -160,6 +201,36 @@ export default function Commerciaux() {
               required
             />
           </div>
+
+          <label className="mb-3 flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              checked={creerAcces}
+              onChange={(event) => setCreerAcces(event.target.checked)}
+            />
+            Créer un accès de connexion pour cette personne
+          </label>
+
+          {creerAcces && (
+            <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <input
+                className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                placeholder="Identifiant de connexion"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                required
+              />
+              <input
+                type="password"
+                className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                placeholder="Mot de passe"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+          )}
+
           {erreur && <p className="mb-3 text-sm text-red-600">{erreur}</p>}
           <button
             type="submit"
@@ -181,42 +252,100 @@ export default function Commerciaux() {
                 <th className="px-4 py-3 font-medium">Rôle</th>
                 <th className="px-4 py-3 font-medium">Téléphone</th>
                 <th className="px-4 py-3 font-medium">Dépôt</th>
+                <th className="px-4 py-3 font-medium">Compte</th>
                 <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {commerciaux.map((commercial) => (
-                <tr key={commercial.id}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2.5">
-                      <Avatar nom={commercial.nom} prenom={commercial.prenom} />
-                      {commercial.prenom} {commercial.nom}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-slate-500">{LABELS_ROLE[commercial.role] ?? '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{commercial.telephone || '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{nomsPdv[commercial.point_de_vente] ?? '—'}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        commercial.actif ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'
-                      }`}
-                    >
-                      {commercial.actif ? 'Actif' : `Parti le ${commercial.date_sortie}`}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-right whitespace-nowrap">
-                    {peut.gererPersonnels && commercial.actif && (
-                      <button
-                        onClick={() => handleDepart(commercial)}
-                        className="text-red-600 underline hover:text-red-800"
+                <Fragment key={commercial.id}>
+                  <tr>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <Avatar nom={commercial.nom} prenom={commercial.prenom} />
+                        {commercial.prenom} {commercial.nom}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-slate-500">{LABELS_ROLE[commercial.role] ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-500">{commercial.telephone || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500">{nomsPdv[commercial.point_de_vente] ?? '—'}</td>
+                    <td className="px-4 py-3 text-slate-500">
+                      {commercial.nom_utilisateur ?? (
+                        peut.gererPersonnels ? (
+                          <button
+                            onClick={() => {
+                              setAccesPourId(commercial.id)
+                              setAccesErreur('')
+                            }}
+                            className="text-or-600 underline hover:text-or-700"
+                          >
+                            Créer un accès
+                          </button>
+                        ) : (
+                          <span className="text-amber-600">Aucun accès</span>
+                        )
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2 py-1 text-xs font-medium ${
+                          commercial.actif ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'
+                        }`}
                       >
-                        Marquer comme parti
-                      </button>
-                    )}
-                  </td>
-                </tr>
+                        {commercial.actif ? 'Actif' : `Parti le ${commercial.date_sortie}`}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      {peut.gererPersonnels && commercial.actif && (
+                        <button
+                          onClick={() => handleDepart(commercial)}
+                          className="text-red-600 underline hover:text-red-800"
+                        >
+                          Marquer comme parti
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  {accesPourId === commercial.id && (
+                    <tr>
+                      <td colSpan={6} className="bg-slate-50 px-4 py-3">
+                        <form onSubmit={handleCreerAcces} className="flex flex-wrap items-center gap-3">
+                          <input
+                            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                            placeholder="Identifiant de connexion"
+                            value={accesUsername}
+                            onChange={(event) => setAccesUsername(event.target.value)}
+                            required
+                          />
+                          <input
+                            type="password"
+                            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+                            placeholder="Mot de passe"
+                            value={accesPassword}
+                            onChange={(event) => setAccesPassword(event.target.value)}
+                            required
+                          />
+                          <button
+                            type="submit"
+                            disabled={accesEnCours}
+                            className="rounded-2xl bg-vert-700 px-4 py-2 text-sm font-medium text-white hover:bg-vert-800 disabled:opacity-50"
+                          >
+                            {accesEnCours ? 'Création...' : 'Créer'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAccesPourId(null)}
+                            className="text-sm text-slate-500 underline hover:text-slate-700"
+                          >
+                            Annuler
+                          </button>
+                          {accesErreur && <p className="w-full text-sm text-red-600">{accesErreur}</p>}
+                        </form>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>
