@@ -38,11 +38,15 @@ const lienClasse = ({ isActive }) =>
   }`
 
 export default function Nav() {
-  const { logout } = useAuth()
+  const { logout, peut } = useAuth()
   const entrees = useFileAttente()
   const enAttente = entrees.filter((entree) => entree.statut === 'en_attente').length
   const echecs = entrees.filter((entree) => entree.statut === 'echec').length
   const total = enAttente + echecs
+
+  // Vente directe (bar/restaurant) est une opération terrain : masquée
+  // pour le comptable, qui reste en lecture seule sur ces écrans.
+  const liens = LIENS.filter((lien) => lien.to !== '/vente-directe' || peut.ecrireOperations)
 
   return (
     <nav className="flex shrink-0 flex-col border-b border-slate-200 bg-white px-4 py-4 lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-b-0">
@@ -73,7 +77,7 @@ export default function Nav() {
       </div>
 
       <div className="flex flex-wrap gap-1 lg:min-h-0 lg:flex-1 lg:flex-col lg:flex-nowrap lg:gap-1 lg:overflow-y-auto">
-        {LIENS.map((lien) => (
+        {liens.map((lien) => (
           <NavLink key={lien.to} to={lien.to} end={lien.end} className={lienClasse}>
             <lien.icon className="h-5 w-5 shrink-0" />
             {lien.label}

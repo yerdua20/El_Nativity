@@ -2,6 +2,7 @@ import { MapPin, Plus, Search, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { creerClient, listerClients } from '../api/ressources'
+import { useAuth } from '../auth/AuthContext'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 
@@ -14,6 +15,7 @@ function Avatar({ nom }) {
 }
 
 export default function Clients() {
+  const { peut } = useAuth()
   const [clients, setClients] = useState(null)
   const [recherche, setRecherche] = useState('')
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
@@ -100,16 +102,18 @@ export default function Clients() {
             onChange={(event) => setRecherche(event.target.value)}
           />
         </div>
-        <button
-          onClick={() => setFormulaireOuvert((v) => !v)}
-          className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-        >
-          <Plus className="h-4 w-4" />
-          Nouveau client
-        </button>
+        {peut.ecrireOperations && (
+          <button
+            onClick={() => setFormulaireOuvert((v) => !v)}
+            className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+          >
+            <Plus className="h-4 w-4" />
+            Nouveau client
+          </button>
+        )}
       </div>
 
-      {formulaireOuvert && (
+      {peut.ecrireOperations && formulaireOuvert && (
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input

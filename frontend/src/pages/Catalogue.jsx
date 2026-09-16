@@ -8,6 +8,7 @@ import {
   listerProduits,
   listerTarifs,
 } from '../api/ressources'
+import { useAuth } from '../auth/AuthContext'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 
@@ -21,7 +22,7 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10)
 }
 
-function SectionProduits({ produits, rafraichir }) {
+function SectionProduits({ produits, rafraichir, peutGerer }) {
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
   const [recherche, setRecherche] = useState('')
   const [nom, setNom] = useState('')
@@ -66,16 +67,18 @@ function SectionProduits({ produits, rafraichir }) {
             onChange={(event) => setRecherche(event.target.value)}
           />
         </div>
-        <button
-          onClick={() => setFormulaireOuvert((v) => !v)}
-          className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-        >
-          <Plus className="h-4 w-4" />
-          Nouveau produit
-        </button>
+        {peutGerer && (
+          <button
+            onClick={() => setFormulaireOuvert((v) => !v)}
+            className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+          >
+            <Plus className="h-4 w-4" />
+            Nouveau produit
+          </button>
+        )}
       </div>
 
-      {formulaireOuvert && (
+      {peutGerer && formulaireOuvert && (
         <form onSubmit={handleSubmit} className="mb-4 grid grid-cols-1 gap-3 rounded-lg border border-slate-200 bg-white p-4 sm:grid-cols-4">
           <input
             className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
@@ -153,7 +156,7 @@ function SectionProduits({ produits, rafraichir }) {
   )
 }
 
-function SectionPointsDeVente({ pointsDeVente, rafraichir }) {
+function SectionPointsDeVente({ pointsDeVente, rafraichir, peutGerer }) {
   const [nom, setNom] = useState('')
   const [typePdv, setTypePdv] = useState('DEPOT')
   const [adresse, setAdresse] = useState('')
@@ -172,39 +175,41 @@ function SectionPointsDeVente({ pointsDeVente, rafraichir }) {
   return (
     <div className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
       <h2 className="mb-3 text-sm font-semibold text-slate-700">Points de vente</h2>
-      <form onSubmit={handleSubmit} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
-        <input
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          placeholder="Nom"
-          value={nom}
-          onChange={(event) => setNom(event.target.value)}
-          required
-        />
-        <select
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          value={typePdv}
-          onChange={(event) => setTypePdv(event.target.value)}
-        >
-          {TYPES_PDV.map((type) => (
-            <option key={type.valeur} value={type.valeur}>
-              {type.libelle}
-            </option>
-          ))}
-        </select>
-        <input
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          placeholder="Adresse"
-          value={adresse}
-          onChange={(event) => setAdresse(event.target.value)}
-        />
-        <button
-          type="submit"
-          disabled={enCours}
-          className="rounded-2xl bg-vert-700 px-4 py-2 text-sm font-medium text-white hover:bg-vert-800 disabled:opacity-50"
-        >
-          Créer
-        </button>
-      </form>
+      {peutGerer && (
+        <form onSubmit={handleSubmit} className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-4">
+          <input
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            placeholder="Nom"
+            value={nom}
+            onChange={(event) => setNom(event.target.value)}
+            required
+          />
+          <select
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            value={typePdv}
+            onChange={(event) => setTypePdv(event.target.value)}
+          >
+            {TYPES_PDV.map((type) => (
+              <option key={type.valeur} value={type.valeur}>
+                {type.libelle}
+              </option>
+            ))}
+          </select>
+          <input
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            placeholder="Adresse"
+            value={adresse}
+            onChange={(event) => setAdresse(event.target.value)}
+          />
+          <button
+            type="submit"
+            disabled={enCours}
+            className="rounded-2xl bg-vert-700 px-4 py-2 text-sm font-medium text-white hover:bg-vert-800 disabled:opacity-50"
+          >
+            Créer
+          </button>
+        </form>
+      )}
       <ul className="divide-y divide-slate-100 text-sm">
         {pointsDeVente.map((pdv) => (
           <li key={pdv.id} className="py-2">
@@ -216,7 +221,7 @@ function SectionPointsDeVente({ pointsDeVente, rafraichir }) {
   )
 }
 
-function SectionTarifs({ tarifs, produits, pointsDeVente, rafraichir }) {
+function SectionTarifs({ tarifs, produits, pointsDeVente, rafraichir, peutGerer }) {
   const [produitId, setProduitId] = useState('')
   const [pointDeVenteId, setPointDeVenteId] = useState('')
   const [prix, setPrix] = useState('')
@@ -250,62 +255,64 @@ function SectionTarifs({ tarifs, produits, pointsDeVente, rafraichir }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
       <h2 className="mb-3 text-sm font-semibold text-slate-700">Tarifs</h2>
-      <form onSubmit={handleSubmit} className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-5">
-        <select
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          value={produitId}
-          onChange={(event) => setProduitId(event.target.value)}
-          required
-        >
-          <option value="" disabled>
-            Produit
-          </option>
-          {produits.map((produit) => (
-            <option key={produit.id} value={produit.id}>
-              {produit.nom}
+      {peutGerer && (
+        <form onSubmit={handleSubmit} className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-5">
+          <select
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            value={produitId}
+            onChange={(event) => setProduitId(event.target.value)}
+            required
+          >
+            <option value="" disabled>
+              Produit
             </option>
-          ))}
-        </select>
-        <select
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          value={pointDeVenteId}
-          onChange={(event) => setPointDeVenteId(event.target.value)}
-          required
-        >
-          <option value="" disabled>
-            Point de vente
-          </option>
-          {pointsDeVente.map((pdv) => (
-            <option key={pdv.id} value={pdv.id}>
-              {pdv.nom}
+            {produits.map((produit) => (
+              <option key={produit.id} value={produit.id}>
+                {produit.nom}
+              </option>
+            ))}
+          </select>
+          <select
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            value={pointDeVenteId}
+            onChange={(event) => setPointDeVenteId(event.target.value)}
+            required
+          >
+            <option value="" disabled>
+              Point de vente
             </option>
-          ))}
-        </select>
-        <input
-          type="number"
-          step="0.01"
-          min="0"
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          placeholder="Prix"
-          value={prix}
-          onChange={(event) => setPrix(event.target.value)}
-          required
-        />
-        <input
-          type="date"
-          className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
-          value={dateEffet}
-          onChange={(event) => setDateEffet(event.target.value)}
-          required
-        />
-        <button
-          type="submit"
-          disabled={enCours}
-          className="rounded-2xl bg-vert-700 px-4 py-2 text-sm font-medium text-white hover:bg-vert-800 disabled:opacity-50"
-        >
-          Créer
-        </button>
-      </form>
+            {pointsDeVente.map((pdv) => (
+              <option key={pdv.id} value={pdv.id}>
+                {pdv.nom}
+              </option>
+            ))}
+          </select>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            placeholder="Prix"
+            value={prix}
+            onChange={(event) => setPrix(event.target.value)}
+            required
+          />
+          <input
+            type="date"
+            className="rounded border border-slate-300 px-3 py-2 text-sm focus:border-or-400 focus:outline-none"
+            value={dateEffet}
+            onChange={(event) => setDateEffet(event.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            disabled={enCours}
+            className="rounded-2xl bg-vert-700 px-4 py-2 text-sm font-medium text-white hover:bg-vert-800 disabled:opacity-50"
+          >
+            Créer
+          </button>
+        </form>
+      )}
       {erreur && <p className="mb-3 text-sm text-red-600">{erreur}</p>}
       <ul className="divide-y divide-slate-100 text-sm">
         {tarifs.map((tarif) => (
@@ -324,6 +331,7 @@ function SectionTarifs({ tarifs, produits, pointsDeVente, rafraichir }) {
 }
 
 export default function Catalogue() {
+  const { peut } = useAuth()
   const [pointsDeVente, setPointsDeVente] = useState([])
   const [produits, setProduits] = useState([])
   const [tarifs, setTarifs] = useState([])
@@ -340,12 +348,23 @@ export default function Catalogue() {
     <Layout>
       <EnTeteBandeau titre="Catalogue" sousTitre="Consultez et gérez vos produits" icone={BookOpen} />
       <p className="mb-6 text-sm text-slate-500">
-        Réservé au staff : les commerciaux terrain peuvent consulter mais pas modifier. Les prix
-        sont gérés séparément dans la section Tarifs (par point de vente et date d'effet).
+        Réservé à la direction (PDG, admin) : le reste du personnel peut consulter mais pas
+        modifier. Les prix sont gérés séparément dans la section Tarifs (par point de vente et
+        date d'effet).
       </p>
-      <SectionProduits produits={produits} rafraichir={rafraichir} />
-      <SectionPointsDeVente pointsDeVente={pointsDeVente} rafraichir={rafraichir} />
-      <SectionTarifs tarifs={tarifs} produits={produits} pointsDeVente={pointsDeVente} rafraichir={rafraichir} />
+      <SectionProduits produits={produits} rafraichir={rafraichir} peutGerer={peut.gererCatalogue} />
+      <SectionPointsDeVente
+        pointsDeVente={pointsDeVente}
+        rafraichir={rafraichir}
+        peutGerer={peut.gererCatalogue}
+      />
+      <SectionTarifs
+        tarifs={tarifs}
+        produits={produits}
+        pointsDeVente={pointsDeVente}
+        rafraichir={rafraichir}
+        peutGerer={peut.gererCatalogue}
+      />
     </Layout>
   )
 }

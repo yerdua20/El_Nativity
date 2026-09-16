@@ -9,6 +9,7 @@ import {
   listerMouvements,
   listerProduits,
 } from '../api/ressources'
+import { useAuth } from '../auth/AuthContext'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
@@ -22,6 +23,7 @@ const MOYENS_PAIEMENT = [
 ]
 
 export default function FicheClient() {
+  const { peut } = useAuth()
   const { id } = useParams()
   const [client, setClient] = useState(null)
   const [mouvements, setMouvements] = useState([])
@@ -230,18 +232,20 @@ export default function FicheClient() {
             )}
           </div>
 
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">Déposer de la marchandise</h2>
-            <button
-              onClick={() => setFormulaireOuvert((v) => !v)}
-              className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-            >
-              <Plus className="h-4 w-4" />
-              Nouveau dépôt
-            </button>
-          </div>
+          {peut.ecrireOperations && (
+            <div className="mb-8 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">Déposer de la marchandise</h2>
+              <button
+                onClick={() => setFormulaireOuvert((v) => !v)}
+                className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+              >
+                <Plus className="h-4 w-4" />
+                Nouveau dépôt
+              </button>
+            </div>
+          )}
 
-          {formulaireOuvert && (
+          {peut.ecrireOperations && formulaireOuvert && (
             <form onSubmit={handleSubmitDepot} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <select
@@ -331,18 +335,20 @@ export default function FicheClient() {
             </form>
           )}
 
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">Déclarer une vente et encaisser</h2>
-            <button
-              onClick={() => setFormulaireVenteOuvert((v) => !v)}
-              className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Déclarer une vente
-            </button>
-          </div>
+          {peut.ecrireOperations && (
+            <div className="mb-8 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">Déclarer une vente et encaisser</h2>
+              <button
+                onClick={() => setFormulaireVenteOuvert((v) => !v)}
+                className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Déclarer une vente
+              </button>
+            </div>
+          )}
 
-          {formulaireVenteOuvert && (
+          {peut.ecrireOperations && formulaireVenteOuvert && (
             <form onSubmit={handleSubmitVente} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-3 text-sm text-slate-500">
                 Le paiement est saisi en même temps que la vente : le solde marchandise diminue, le
@@ -453,18 +459,20 @@ export default function FicheClient() {
             </form>
           )}
 
-          <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700">Retour de marchandise invendue</h2>
-            <button
-              onClick={() => setFormulaireRetourOuvert((v) => !v)}
-              className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-            >
-              <Undo2 className="h-4 w-4" />
-              Nouveau retour
-            </button>
-          </div>
+          {peut.ecrireOperations && (
+            <div className="mb-8 flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-slate-700">Retour de marchandise invendue</h2>
+              <button
+                onClick={() => setFormulaireRetourOuvert((v) => !v)}
+                className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+              >
+                <Undo2 className="h-4 w-4" />
+                Nouveau retour
+              </button>
+            </div>
+          )}
 
-          {formulaireRetourOuvert && (
+          {peut.ecrireOperations && formulaireRetourOuvert && (
             <form onSubmit={handleSubmitRetour} className="mb-8 rounded-lg border border-slate-200 bg-white p-4">
               <p className="mb-3 text-sm text-slate-500">
                 La quantité retournée recrédite directement le stock du dépôt central.

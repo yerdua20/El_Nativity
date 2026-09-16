@@ -1,6 +1,7 @@
 import { Briefcase, Plus } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { creerCommercial, listerCommerciaux, listerPointsDeVente, marquerCommercialParti } from '../api/ressources'
+import { useAuth } from '../auth/AuthContext'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
@@ -27,6 +28,7 @@ const ROLES = [
 const LABELS_ROLE = Object.fromEntries(ROLES.map((r) => [r.value, r.label]))
 
 export default function Commerciaux() {
+  const { peut } = useAuth()
   const [commerciaux, setCommerciaux] = useState([])
   const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
   const [formulaireOuvert, setFormulaireOuvert] = useState(false)
@@ -88,17 +90,19 @@ export default function Commerciaux() {
     <Layout>
       <EnTeteBandeau titre="Personnels" sousTitre="Gérez le personnel et leurs informations" icone={Briefcase} />
 
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={() => setFormulaireOuvert((v) => !v)}
-          className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-        >
-          <Plus className="h-4 w-4" />
-          Nouveau personnel
-        </button>
-      </div>
+      {peut.gererPersonnels && (
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={() => setFormulaireOuvert((v) => !v)}
+            className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+          >
+            <Plus className="h-4 w-4" />
+            Nouveau personnel
+          </button>
+        </div>
+      )}
 
-      {formulaireOuvert && (
+      {peut.gererPersonnels && formulaireOuvert && (
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
           <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
             <input
@@ -203,7 +207,7 @@ export default function Commerciaux() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right whitespace-nowrap">
-                    {commercial.actif && (
+                    {peut.gererPersonnels && commercial.actif && (
                       <button
                         onClick={() => handleDepart(commercial)}
                         className="text-red-600 underline hover:text-red-800"

@@ -7,12 +7,14 @@ import {
   listerStockMarchands,
   listerStockPointsDeVente,
 } from '../api/ressources'
+import { useAuth } from '../auth/AuthContext'
 import EnTeteBandeau from '../components/EnTeteBandeau'
 import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
 
 export default function Stock() {
+  const { peut } = useAuth()
   const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
   const produits = useRessource(listerProduits, 'cache_produits')
   const [stock, setStock] = useState([])
@@ -87,16 +89,18 @@ export default function Stock() {
             ))}
           </select>
         </div>
-        <button
-          onClick={() => setFormulaireOuvert((v) => !v)}
-          className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
-        >
-          <Plus className="h-4 w-4" />
-          Nouvelle réception
-        </button>
+        {peut.ecrireOperations && (
+          <button
+            onClick={() => setFormulaireOuvert((v) => !v)}
+            className="flex items-center gap-1.5 rounded-2xl bg-or-500 px-3 py-2 text-sm font-medium text-white hover:bg-or-600"
+          >
+            <Plus className="h-4 w-4" />
+            Nouvelle réception
+          </button>
+        )}
       </div>
 
-      {formulaireOuvert && (
+      {peut.ecrireOperations && formulaireOuvert && (
         <form onSubmit={handleSubmit} className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <select
