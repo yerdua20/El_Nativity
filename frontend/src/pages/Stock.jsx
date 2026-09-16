@@ -13,9 +13,28 @@ import Layout from '../components/Layout'
 import { useRessource } from '../hooks/useRessource'
 import { mettreEnFile } from '../offline/sync'
 
+// Le dépôt central alimente les marchands (périmètre de la chargée
+// des ventes), le bar et le restaurant alimentent la vente directe
+// (périmètre du gérant) : chacun ne voit que les points de vente et
+// le stock de son propre circuit.
+const TYPES_PDV_PAR_NIVEAU = {
+  GERANT: ['BAR', 'RESTAURANT'],
+  CHARGE_VENTES: ['DEPOT'],
+}
+
+const TITRES_SECTION_STOCK = {
+  GERANT: 'Bar, Restaurant',
+  CHARGE_VENTES: 'Dépôt Central',
+}
+
 export default function Stock() {
-  const { peut } = useAuth()
-  const pointsDeVente = useRessource(listerPointsDeVente, 'cache_points_de_vente')
+  const { peut, niveau } = useAuth()
+  const typesPdvAutorises = TYPES_PDV_PAR_NIVEAU[niveau] ?? null
+  const pointsDeVenteToutes = useRessource(listerPointsDeVente, 'cache_points_de_vente')
+  const pointsDeVente = useMemo(
+    () => (typesPdvAutorises ? pointsDeVenteToutes.filter((p) => typesPdvAutorises.includes(p.type_pdv)) : pointsDeVenteToutes),
+    [pointsDeVenteToutes, typesPdvAutorises],
+  )
   const produits = useRessource(listerProduits, 'cache_produits')
   const [stock, setStock] = useState([])
   const [stockMarchands, setStockMarchands] = useState(null)
@@ -36,11 +55,13 @@ export default function Stock() {
   useEffect(rafraichir, [])
 
   const stockFiltre = useMemo(() => {
-    if (!pointDeVenteId) return stock
-    return stock.filter((ligne) => String(ligne.point_de_vente) === pointDeVenteId)
-  }, [stock, pointDeVenteId])
+    const idsAutorises = new Set(pointsDeVente.map((p) => p.id))
+    const base = typesPdvAutorises ? stock.filter((ligne) => idsAutorises.has(ligne.point_de_vente)) : stock
+    if (!pointDeVenteId) return base
+    return base.filter((ligne) => String(ligne.point_de_vente) === pointDeVenteId)
+  }, [stock, pointDeVenteId, pointsDeVente, typesPdvAutorises])
 
-  const nomsPdv = useMemo(() => Object.fromEntries(pointsDeVente.map((p) => [p.id, p.nom])), [pointsDeVente])
+  const nomsPdv = useMemo(() => Object.fromEntries(pointsDeVenteToutes.map((p) => [p.id, p.nom])), [pointsDeVenteToutes])
   const nomsProduits = useMemo(() => Object.fromEntries(produits.map((p) => [p.id, p.nom])), [produits])
 
   async function handleSubmit(event) {
@@ -72,7 +93,9 @@ export default function Stock() {
         icone={Boxes}
       />
 
-      <h2 className="mb-3 text-sm font-semibold text-slate-700">Dépôt, Bar, Restaurant...</h2>
+      <h2 className="mb-3 text-sm font-semibold text-slate-700">
+        {TITRES_SECTION_STOCK[niveau] ?? 'Dépôt, Bar, Restaurant...'}
+      </h2>
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="w-full max-w-xs">
@@ -182,42 +205,46 @@ export default function Stock() {
         )}
       </div>
 
-      <h2 className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
-        <Store className="h-4 w-4" />
-        Marchandise chez les marchands (dépôt-vente)
-      </h2>
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
-        {!stockMarchands && <p className="p-4 text-sm text-slate-500">Chargement...</p>}
-        {stockMarchands && stockMarchands.length === 0 && (
-          <p className="p-4 text-sm text-slate-500">Aucune marchandise en dépôt-vente pour l'instant.</p>
-        )}
-        {stockMarchands && stockMarchands.length > 0 && (
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-slate-500">
-                <th className="px-4 py-3 font-medium">Marchand</th>
-                <th className="px-4 py-3 font-medium">Produit</th>
-                <th className="px-4 py-3 font-medium">Quantité restante</th>
-                <th className="px-4 py-3 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {stockMarchands.map((ligne) => (
-                <tr key={`${ligne.client}-${ligne.produit}`}>
-                  <td className="px-4 py-3">{ligne.client_nom}</td>
-                  <td className="px-4 py-3">{ligne.produit_nom}</td>
-                  <td className="px-4 py-3 font-medium text-slate-900">{ligne.quantite_restante}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link to={`/clients/${ligne.client}`} className="text-or-600 underline hover:text-or-700">
-                      Voir la fiche
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {niveau !== 'GERANT' && (
+        <>
+          <h2 className="mt-8 mb-3 flex items-center gap-2 text-sm font-semibold text-slate-700">
+            <Store className="h-4 w-4" />
+            Marchandise chez les marchands (dépôt-vente)
+          </h2>
+          <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+            {!stockMarchands && <p className="p-4 text-sm text-slate-500">Chargement...</p>}
+            {stockMarchands && stockMarchands.length === 0 && (
+              <p className="p-4 text-sm text-slate-500">Aucune marchandise en dépôt-vente pour l'instant.</p>
+            )}
+            {stockMarchands && stockMarchands.length > 0 && (
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500">
+                    <th className="px-4 py-3 font-medium">Marchand</th>
+                    <th className="px-4 py-3 font-medium">Produit</th>
+                    <th className="px-4 py-3 font-medium">Quantité restante</th>
+                    <th className="px-4 py-3 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {stockMarchands.map((ligne) => (
+                    <tr key={`${ligne.client}-${ligne.produit}`}>
+                      <td className="px-4 py-3">{ligne.client_nom}</td>
+                      <td className="px-4 py-3">{ligne.produit_nom}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900">{ligne.quantite_restante}</td>
+                      <td className="px-4 py-3 text-right">
+                        <Link to={`/clients/${ligne.client}`} className="text-or-600 underline hover:text-or-700">
+                          Voir la fiche
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
+      )}
     </Layout>
   )
 }
